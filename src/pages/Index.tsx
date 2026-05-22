@@ -1,10 +1,18 @@
 import { useState } from 'react';
 import { type Game, type Difficulty } from '@/data/games';
 import { CatalogSection } from '@/components/CatalogSection';
-import { StatsSection } from '@/components/SideSection';
+import { StatsSection, CertificateSection, ContactSection } from '@/components/SideSection';
 import GameModal from '@/components/GameModal';
+import InteractiveGameModal from '@/components/InteractiveGameModal';
 
-type Section = 'catalog' | 'stats';
+type Section = 'catalog' | 'stats' | 'certificate' | 'contact';
+
+const navItems: { id: Section; label: string }[] = [
+  { id: 'catalog', label: '📚 Игры' },
+  { id: 'stats', label: '📊 Прогресс' },
+  { id: 'certificate', label: '🏆 Сертификат' },
+  { id: 'contact', label: '💬 Контакты' },
+];
 
 export default function Index() {
   const [section, setSection] = useState<Section>('catalog');
@@ -56,24 +64,31 @@ export default function Index() {
     }
   }
 
+  function handleInteractiveFinish(xpEarned: number) {
+    if (activeGame && !completedGames.includes(activeGame.id)) {
+      setCompletedGames(prev => [...prev, activeGame.id]);
+      setTotalXP(prev => prev + xpEarned);
+    }
+    setActiveGame(null);
+  }
+
+  const isInteractive = activeGame && (activeGame.type === 'match' || activeGame.type === 'sort');
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white border-b-2 border-purple-200 shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🎓</span>
             <span className="font-game text-purple-700 text-lg">КодоГерой</span>
           </div>
 
-          <div className="flex items-center gap-1">
-            {([
-              { id: 'catalog', label: '📚 Игры' },
-              { id: 'stats', label: '📊 Прогресс' },
-            ] as { id: Section; label: string }[]).map(item => (
+          <div className="flex items-center gap-1 flex-wrap">
+            {navItems.map(item => (
               <button
                 key={item.id}
                 onClick={() => setSection(item.id)}
-                className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                className="px-3 py-2 rounded-lg text-sm font-semibold transition-colors"
                 style={{
                   background: section === item.id ? '#7c3aed' : 'transparent',
                   color: section === item.id ? 'white' : '#6b7280',
@@ -104,9 +119,14 @@ export default function Index() {
             onNavigateToSection={() => {}}
           />
         )}
-
         {section === 'stats' && (
           <StatsSection completedGames={completedGames} totalXP={totalXP} />
+        )}
+        {section === 'certificate' && (
+          <CertificateSection completedGames={completedGames} totalXP={totalXP} />
+        )}
+        {section === 'contact' && (
+          <ContactSection />
         )}
       </main>
 
@@ -114,7 +134,15 @@ export default function Index() {
         <p className="text-gray-400 text-sm">КодоГерой · Дидактические игры по информатике · 7-9 класс</p>
       </footer>
 
-      {activeGame && (
+      {activeGame && isInteractive && (
+        <InteractiveGameModal
+          activeGame={activeGame}
+          onClose={() => setActiveGame(null)}
+          onFinish={handleInteractiveFinish}
+        />
+      )}
+
+      {activeGame && !isInteractive && (
         <GameModal
           activeGame={activeGame}
           gameStep={gameStep}

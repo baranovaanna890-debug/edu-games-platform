@@ -241,55 +241,48 @@ export function RatingSection({ completedGames, totalXP }: RatingProps) {
 
 export function ContactSection() {
   return (
-    <div className="animate-fade-in max-w-2xl mx-auto">
-      <div className="mb-8 text-center">
-        <h2 className="font-game text-3xl text-purple-700 mb-2">💬 Контакты и Поддержка</h2>
-        <p className="text-gray-500">Есть вопрос? Мы поможем!</p>
-      </div>
+    <div className="max-w-2xl mx-auto">
+      <h2 className="font-game text-2xl text-purple-700 mb-1">💬 Контакты</h2>
+      <p className="text-gray-400 text-sm mb-6">Есть вопросы? Пишите!</p>
 
-      <div className="grid grid-cols-1 gap-4 mb-6">
-        {[
-          { emoji: '📧', title: 'Электронная почта', desc: 'info@kodo-hero.ru', sub: 'Ответим в течение 24 часов', color: '#ede9fe' },
-          { emoji: '📱', title: 'Телефон учителя', desc: '+7 (000) 000-00-00', sub: 'Пн-Пт с 8:00 до 17:00', color: '#fce7f3' },
-          { emoji: '🏫', title: 'Кабинет информатики', desc: 'Кабинет №204', sub: '2 этаж, главный корпус', color: '#dbeafe' },
-        ].map(c => (
-          <div key={c.title} className="card-game rounded-xl p-4 flex items-center gap-4 hover-lift">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style={{ background: c.color }}>
-              {c.emoji}
-            </div>
-            <div>
-              <div className="font-semibold text-sm text-gray-800">{c.title}</div>
-              <div className="text-sm font-semibold text-purple-600">{c.desc}</div>
-              <div className="text-xs text-gray-400">{c.sub}</div>
-            </div>
+      <div className="space-y-3 mb-6">
+        <div className="bg-white rounded-xl border-2 border-purple-100 p-4 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-purple-50">📧</div>
+          <div>
+            <div className="font-semibold text-sm text-gray-700">Электронная почта</div>
+            <div className="text-sm font-semibold text-purple-600">baranovaanna890@gmail.com</div>
+            <div className="text-xs text-gray-400">Ответим в течение 24 часов</div>
           </div>
-        ))}
-      </div>
+        </div>
 
-      <div className="card-game rounded-2xl p-6 mb-6">
-        <h3 className="font-game text-lg text-purple-700 mb-4">📝 Написать нам</h3>
-        <div className="space-y-3">
-          <input placeholder="Твоё имя" className="w-full px-4 py-3 rounded-xl text-sm text-gray-800 placeholder:text-gray-400 outline-none border-2 border-gray-200 focus:border-purple-400 bg-gray-50" />
-          <input placeholder="Email или телефон" className="w-full px-4 py-3 rounded-xl text-sm text-gray-800 placeholder:text-gray-400 outline-none border-2 border-gray-200 focus:border-purple-400 bg-gray-50" />
-          <textarea placeholder="Опиши свой вопрос..." rows={4} className="w-full px-4 py-3 rounded-xl text-sm text-gray-800 placeholder:text-gray-400 outline-none resize-none border-2 border-gray-200 focus:border-purple-400 bg-gray-50" />
-          <button className="w-full btn-game py-3 rounded-xl font-game text-sm text-white bg-purple-600">
-            Отправить сообщение 🚀
-          </button>
+        <div className="bg-white rounded-xl border-2 border-pink-100 p-4 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-pink-50">📱</div>
+          <div>
+            <div className="font-semibold text-sm text-gray-700">Телефон</div>
+            <div className="text-sm font-semibold text-purple-600">+7 (913) 066-73-92</div>
+            <div className="text-xs text-gray-400">Пн–Пт с 8:00 до 17:00</div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border-2 border-blue-100 p-4 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-blue-50">🏫</div>
+          <div>
+            <div className="font-semibold text-sm text-gray-700">Педагог-разработчик</div>
+            <div className="text-sm font-semibold text-purple-600">Баранова Анна</div>
+            <div className="text-xs text-gray-400">Специальность: Профессиональное обучение — Информационные системы и программирование</div>
+          </div>
         </div>
       </div>
 
-      <div className="card-game rounded-xl p-5">
-        <p className="font-game text-sm text-purple-700 mb-3">❓ Частые вопросы</p>
-        {[
-          { q: '🎮 Сколько игр доступно?', a: '30 игр по информатике для 7-9 классов, три уровня сложности.' },
-          { q: '🏆 Как получить сертификат?', a: 'Перейди в раздел «Сертификат», введи имя и фамилию — создаётся мгновенно!' },
-          { q: '⚡ Что такое XP?', a: 'Очки опыта, которые ты зарабатываешь за прохождение игр. Чем больше правильных ответов — тем больше XP!' },
-        ].map(faq => (
-          <div key={faq.q} className="mb-3 p-3 rounded-xl bg-purple-50 border border-purple-100">
-            <div className="font-semibold text-sm text-gray-800 mb-1">{faq.q}</div>
-            <div className="text-xs text-gray-500">{faq.a}</div>
-          </div>
-        ))}
+      <div className="bg-purple-50 rounded-xl border border-purple-200 p-5">
+        <p className="font-semibold text-purple-700 mb-2">📌 О проекте</p>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          Данный сайт является выпускной квалификационной работой по теме:<br/>
+          <strong>«Активизация учебно-познавательной деятельности учащихся средствами дидактических игр»</strong>.
+        </p>
+        <p className="text-sm text-gray-500 mt-2">
+          Платформа содержит дидактические игры по информатике для учащихся 7–9 классов с разным уровнем сложности.
+        </p>
       </div>
     </div>
   );
