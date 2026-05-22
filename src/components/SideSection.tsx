@@ -41,65 +41,37 @@ interface RatingProps {
 
 export function StatsSection({ completedGames, totalXP }: StatsProps) {
   return (
-    <div className="animate-fade-in">
-      <div className="mb-8 text-center">
-        <h2 className="font-game text-3xl text-purple-700 mb-2">📊 Статистика и Достижения</h2>
-        <p className="text-gray-500">Следи за своим прогрессом</p>
-      </div>
+    <div>
+      <h2 className="font-game text-2xl text-purple-700 mb-1">📊 Мой прогресс</h2>
+      <p className="text-gray-400 text-sm mb-6">Следи за своими достижениями</p>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {[
-          { emoji: '🎮', label: 'Игр пройдено', value: completedGames.length, total: 30, color: '#7c3aed', bg: '#ede9fe' },
-          { emoji: '⚡', label: 'Всего XP', value: totalXP, total: 3750, color: '#f59e0b', bg: '#fef3c7' },
-          { emoji: '🔥', label: 'Дней подряд', value: 3, total: 30, color: '#ef4444', bg: '#fee2e2' },
-          { emoji: '🏆', label: 'Достижений', value: Math.floor(completedGames.length / 3), total: 10, color: '#10b981', bg: '#d1fae5' },
-        ].map(s => (
-          <div key={s.label} className="card-game rounded-2xl p-5 text-center hover-lift" style={{ borderTop: `4px solid ${s.color}` }}>
-            <div className="text-4xl mb-2">{s.emoji}</div>
-            <div className="font-game text-3xl text-gray-800 mb-1">{s.value}</div>
-            <div className="text-xs text-gray-500 mb-3">{s.label}</div>
-            <div className="h-2 rounded-full overflow-hidden bg-gray-100">
-              <div className="h-full rounded-full" style={{ width: `${Math.min((s.value / s.total) * 100, 100)}%`, background: s.color }} />
-            </div>
-            <div className="text-xs text-gray-400 mt-1">{s.value} / {s.total}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="card-game rounded-2xl p-6 mb-6">
-        <h3 className="font-game text-lg text-purple-700 mb-4">🏅 Достижения</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {[
-            { emoji: '🌱', title: 'Первый шаг', desc: 'Пройди первую игру', earned: completedGames.length >= 1 },
-            { emoji: '🔥', title: 'На разогреве', desc: 'Пройди 5 игр', earned: completedGames.length >= 5 },
-            { emoji: '⚡', title: 'Энергетик', desc: 'Набери 500 XP', earned: totalXP >= 500 },
-            { emoji: '🧠', title: 'Эрудит', desc: 'Пройди 10 игр', earned: completedGames.length >= 10 },
-            { emoji: '🏆', title: 'Чемпион', desc: 'Пройди 20 игр', earned: completedGames.length >= 20 },
-            { emoji: '👑', title: 'КодоГерой', desc: 'Пройди все 30 игр', earned: completedGames.length >= 30 },
-            { emoji: '🔢', title: 'Алгоритмист', desc: 'Пройди все игры по алгоритмам', earned: games.filter(g => g.topic === 'Алгоритмы').every(g => completedGames.includes(g.id)) },
-            { emoji: '🌐', title: 'Сетевик', desc: 'Пройди все игры по сетям', earned: games.filter(g => g.topic === 'Компьютерные сети').every(g => completedGames.includes(g.id)) },
-          ].map(ach => (
-            <div key={ach.title} className="flex items-center gap-3 p-3 rounded-xl border-2 transition-all"
-              style={{ background: ach.earned ? '#ede9fe' : '#f9fafb', borderColor: ach.earned ? '#7c3aed' : '#e5e7eb', opacity: ach.earned ? 1 : 0.55 }}>
-              <span className="text-3xl">{ach.emoji}</span>
-              <div>
-                <div className="font-semibold text-sm text-gray-800">{ach.title} {ach.earned && '✓'}</div>
-                <div className="text-xs text-gray-500">{ach.desc}</div>
-              </div>
-            </div>
-          ))}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="bg-white rounded-xl border-2 border-purple-100 p-4 text-center">
+          <div className="text-3xl mb-1">🎮</div>
+          <div className="font-game text-2xl text-purple-700">{completedGames.length}</div>
+          <div className="text-xs text-gray-400">игр пройдено из 30</div>
+        </div>
+        <div className="bg-white rounded-xl border-2 border-yellow-100 p-4 text-center">
+          <div className="text-3xl mb-1">⚡</div>
+          <div className="font-game text-2xl text-yellow-500">{totalXP}</div>
+          <div className="text-xs text-gray-400">очков опыта</div>
         </div>
       </div>
 
-      {completedGames.length > 0 && (
-        <div className="card-game rounded-2xl p-6">
-          <h3 className="font-game text-lg text-purple-700 mb-4">✅ Пройденные игры</h3>
+      {completedGames.length === 0 ? (
+        <div className="bg-white rounded-xl border-2 border-gray-100 p-8 text-center">
+          <div className="text-4xl mb-3">🎯</div>
+          <p className="text-gray-500 text-sm">Ты ещё не прошёл ни одной игры.<br/>Перейди в каталог и начни!</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border-2 border-gray-100 p-5">
+          <h3 className="font-semibold text-gray-700 mb-3">✅ Пройденные игры</h3>
           <div className="space-y-2">
             {completedGames.map(id => {
               const g = games.find(game => game.id === id);
               if (!g) return null;
               return (
-                <div key={id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
+                <div key={id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
                   <div className="flex items-center gap-3">
                     <span className="text-xl">{g.emoji}</span>
                     <div>

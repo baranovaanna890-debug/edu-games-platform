@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { type Game, type Difficulty } from '@/data/games';
-import Navbar from '@/components/Navbar';
+import { CatalogSection } from '@/components/CatalogSection';
+import { StatsSection } from '@/components/SideSection';
 import GameModal from '@/components/GameModal';
-import { CatalogSection, GamesSection } from '@/components/CatalogSection';
-import { StatsSection, CertificateSection, RatingSection, ContactSection } from '@/components/SideSection';
 
-type Section = 'catalog' | 'games' | 'stats' | 'certificate' | 'rating' | 'contact';
+type Section = 'catalog' | 'stats';
 
 export default function Index() {
   const [section, setSection] = useState<Section>('catalog');
@@ -58,16 +57,41 @@ export default function Index() {
   }
 
   return (
-    <div className="min-h-screen grid-bg" style={{ fontFamily: "'Nunito', sans-serif" }}>
-      <Navbar
-        section={section}
-        setSection={setSection}
-        totalXP={totalXP}
-        selectedDifficulty={selectedDifficulty}
-        setSelectedDifficulty={setSelectedDifficulty}
-      />
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white border-b-2 border-purple-200 shadow-sm">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🎓</span>
+            <span className="font-game text-purple-700 text-lg">КодоГерой</span>
+          </div>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center gap-1">
+            {([
+              { id: 'catalog', label: '📚 Игры' },
+              { id: 'stats', label: '📊 Прогресс' },
+            ] as { id: Section; label: string }[]).map(item => (
+              <button
+                key={item.id}
+                onClick={() => setSection(item.id)}
+                className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                style={{
+                  background: section === item.id ? '#7c3aed' : 'transparent',
+                  color: section === item.id ? 'white' : '#6b7280',
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-yellow-100 border border-yellow-300">
+            <span>⚡</span>
+            <span className="font-semibold text-sm text-yellow-600">{totalXP} XP</span>
+          </div>
+        </div>
+      </nav>
+
+      <main className="max-w-5xl mx-auto px-4 py-8">
         {section === 'catalog' && (
           <CatalogSection
             selectedTopic={selectedTopic}
@@ -77,38 +101,17 @@ export default function Index() {
             completedGames={completedGames}
             totalXP={totalXP}
             onStartGame={startGame}
-            onNavigateToSection={setSection}
-          />
-        )}
-
-        {section === 'games' && (
-          <GamesSection
-            completedGames={completedGames}
-            totalXP={totalXP}
-            setSelectedDifficulty={setSelectedDifficulty}
-            setSection={setSection}
+            onNavigateToSection={() => {}}
           />
         )}
 
         {section === 'stats' && (
           <StatsSection completedGames={completedGames} totalXP={totalXP} />
         )}
-
-        {section === 'certificate' && (
-          <CertificateSection completedGames={completedGames} totalXP={totalXP} />
-        )}
-
-        {section === 'rating' && (
-          <RatingSection completedGames={completedGames} totalXP={totalXP} />
-        )}
-
-        {section === 'contact' && (
-          <ContactSection />
-        )}
       </main>
 
-      <footer className="border-t-2 border-purple-100 mt-16 py-6 text-center bg-white">
-        <p className="text-gray-400 text-sm">🎓 КодоГерой · Дидактические игры по информатике · 7-9 класс</p>
+      <footer className="border-t border-gray-200 mt-12 py-4 text-center">
+        <p className="text-gray-400 text-sm">КодоГерой · Дидактические игры по информатике · 7-9 класс</p>
       </footer>
 
       {activeGame && (

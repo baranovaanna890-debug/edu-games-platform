@@ -33,7 +33,7 @@ export default function GameModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(124,58,237,0.25)', backdropFilter: 'blur(6px)' }}>
-      <div className="w-full max-w-xl animate-scale-in">
+      <div className="w-full max-w-xl">
         <div className="bg-white rounded-2xl overflow-hidden border-2 border-purple-300 shadow-2xl">
           <div className="p-4 flex items-center justify-between bg-purple-50 border-b border-purple-100">
             <div className="flex items-center gap-3">
@@ -50,7 +50,7 @@ export default function GameModal({
 
           {gameFinished ? (
             <div className="p-8 text-center">
-              <div className="text-6xl mb-4 animate-bounce-slow">
+              <div className="text-6xl mb-4">
                 {score === activeGame.questions.length ? '🏆' : score >= 3 ? '⭐' : '💪'}
               </div>
               <h2 className="font-game text-2xl text-purple-700 mb-2">
@@ -106,14 +106,14 @@ export default function GameModal({
               </div>
 
               {showExplanation && (
-                <div className="rounded-xl p-3 mb-4 text-sm animate-fade-in bg-blue-50 border border-blue-200 text-blue-700">
+                <div className="rounded-xl p-3 mb-4 text-sm bg-blue-50 border border-blue-200 text-blue-700">
                   <Icon name="Lightbulb" size={14} className="inline mr-1" />
                   {q.explanation}
                 </div>
               )}
 
               {selectedAnswer !== null && (
-                <button onClick={onNext} className="w-full btn-game py-3 rounded-xl font-game text-sm text-white animate-fade-in bg-purple-600">
+                <button onClick={onNext} className="w-full py-3 rounded-xl font-semibold text-sm text-white bg-purple-600 hover:bg-purple-700 transition-colors">
                   {gameStep + 1 >= activeGame.questions.length ? 'Завершить' : 'Следующий вопрос →'}
                 </button>
               )}
