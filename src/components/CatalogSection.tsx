@@ -46,18 +46,17 @@ export function CatalogSection({
 
   return (
     <div className="animate-fade-in">
-      <div className="relative rounded-3xl overflow-hidden mb-8 p-8 md:p-12" style={{ background: 'linear-gradient(135deg, #1e0a3c 0%, #0a1628 50%, #0a2a1a 100%)' }}>
-        <div className="absolute inset-0 stars-bg opacity-60" />
-        <div className="absolute top-4 right-4 text-6xl animate-float opacity-30">🤖</div>
-        <div className="absolute bottom-4 left-1/3 text-4xl animate-float opacity-20" style={{ animationDelay: '1s' }}>💡</div>
+      <div className="relative rounded-2xl overflow-hidden mb-8 p-8 md:p-10" style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #ec4899 100%)' }}>
+        <div className="absolute top-4 right-4 text-6xl animate-float opacity-40">🤖</div>
+        <div className="absolute bottom-4 left-1/3 text-4xl animate-float opacity-30" style={{ animationDelay: '1s' }}>💡</div>
         <div className="relative">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-4" style={{ background: 'rgba(124,58,237,0.3)', border: '1px solid rgba(124,58,237,0.5)', color: '#c4b5fd' }}>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-4 bg-white/20 text-white border border-white/30">
             🎓 Информатика · 7-9 класс · 30 игр
           </div>
           <h1 className="font-game text-3xl md:text-5xl text-white mb-3">
             Стань <span className="shimmer-text">КодоГероем!</span>
           </h1>
-          <p className="text-muted-foreground text-base md:text-lg max-w-xl mb-6">
+          <p className="text-white/80 text-base md:text-lg max-w-xl mb-6">
             Учи информатику через игры, зарабатывай XP и получай сертификаты. Алгоритмы, программирование, сети — всё в формате игры!
           </p>
           <div className="flex flex-wrap gap-3">
@@ -67,7 +66,7 @@ export function CatalogSection({
               { emoji: '🏆', label: 'Сертификаты' },
               { emoji: '📈', label: 'Рейтинг' },
             ].map(item => (
-              <div key={item.label} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold text-white" style={{ background: 'rgba(255,255,255,0.08)' }}>
+              <div key={item.label} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold text-white bg-white/15 border border-white/20">
                 <span>{item.emoji}</span> {item.label}
               </div>
             ))}
@@ -81,11 +80,11 @@ export function CatalogSection({
             <button
               key={t.id}
               onClick={() => setSelectedTopic(t.id)}
-              className="px-3 py-1.5 rounded-full text-sm font-semibold transition-all"
+              className="px-3 py-1.5 rounded-full text-sm font-semibold transition-all border-2"
               style={{
-                background: selectedTopic === t.id ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : 'hsl(var(--muted))',
-                color: selectedTopic === t.id ? 'white' : 'hsl(var(--muted-foreground))',
-                boxShadow: selectedTopic === t.id ? '0 0 12px rgba(124,58,237,0.4)' : 'none',
+                background: selectedTopic === t.id ? '#7c3aed' : '#ffffff',
+                color: selectedTopic === t.id ? 'white' : '#6b7280',
+                borderColor: selectedTopic === t.id ? '#7c3aed' : '#e5e7eb',
               }}
             >
               {t.emoji} {t.label}
@@ -97,11 +96,15 @@ export function CatalogSection({
             <button
               key={d}
               onClick={() => setSelectedDifficulty(d)}
-              className="px-3 py-1 rounded-full text-xs font-bold transition-all text-white"
+              className="px-3 py-1 rounded-full text-xs font-bold transition-all border-2"
               style={{
                 background: selectedDifficulty === d
                   ? d === 'easy' ? '#10b981' : d === 'medium' ? '#f59e0b' : d === 'hard' ? '#ef4444' : '#7c3aed'
-                  : 'hsl(var(--muted))',
+                  : '#ffffff',
+                color: selectedDifficulty === d ? 'white' : '#6b7280',
+                borderColor: selectedDifficulty === d
+                  ? d === 'easy' ? '#10b981' : d === 'medium' ? '#f59e0b' : d === 'hard' ? '#ef4444' : '#7c3aed'
+                  : '#e5e7eb',
               }}
             >
               {d === 'all' ? '🎯 Все' : d === 'easy' ? '🟢 Лёгкий' : d === 'medium' ? '🟡 Средний' : '🔴 Сложный'}
@@ -115,35 +118,35 @@ export function CatalogSection({
           <div
             key={game.id}
             className="game-card card-game rounded-2xl overflow-hidden hover-lift cursor-pointer relative"
-            style={{ animationDelay: `${idx * 0.05}s`, border: '1px solid hsl(var(--border))' }}
+            style={{ animationDelay: `${idx * 0.05}s` }}
             onClick={() => onStartGame(game)}
           >
             <div className="p-5">
               <div className="flex items-start justify-between mb-3">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl" style={{ background: 'hsl(var(--muted))' }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-purple-50 border border-purple-100">
                   {game.emoji}
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full text-white ${difficultyClass[game.difficulty]}`}>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${difficultyClass[game.difficulty]}`}>
                     {difficultyLabel[game.difficulty]}
                   </span>
                   {completedGames.includes(game.id) && (
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: '#10b981' }}>✓ Пройдено</span>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200">✓ Пройдено</span>
                   )}
                 </div>
               </div>
-              <h3 className="font-game text-sm text-white mb-1 leading-tight">{game.title}</h3>
-              <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{game.description}</p>
+              <h3 className="font-game text-sm text-gray-800 mb-1 leading-tight">{game.title}</h3>
+              <p className="text-xs text-gray-500 mb-3 leading-relaxed">{game.description}</p>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <div className="flex items-center gap-3 text-xs text-gray-400">
                   <span>⏱ {game.duration}</span>
                   <span>📚 {game.grade}</span>
                 </div>
-                <span className="text-xs font-bold text-game-yellow">⚡ {game.xp} XP</span>
+                <span className="text-xs font-bold text-yellow-500">⚡ {game.xp} XP</span>
               </div>
             </div>
-            <div className="game-card-overlay absolute inset-0 flex items-center justify-center rounded-2xl" style={{ background: 'rgba(124,58,237,0.3)', backdropFilter: 'blur(2px)' }}>
-              <div className="px-6 py-2 rounded-full font-game text-sm text-white" style={{ background: 'linear-gradient(135deg, #7c3aed, #5b21b6)' }}>
+            <div className="game-card-overlay absolute inset-0 flex items-center justify-center rounded-2xl" style={{ background: 'rgba(124,58,237,0.15)', backdropFilter: 'blur(1px)' }}>
+              <div className="px-6 py-2 rounded-full font-game text-sm text-white bg-purple-600 shadow-md">
                 Играть! 🎮
               </div>
             </div>
@@ -158,27 +161,36 @@ export function GamesSection({ completedGames, totalXP, setSelectedDifficulty, s
   return (
     <div className="animate-fade-in">
       <div className="mb-8 text-center">
-        <h2 className="font-game text-3xl text-white mb-2">🎮 Игровой Зал</h2>
-        <p className="text-muted-foreground">Выбери уровень и начни прокачку знаний!</p>
+        <h2 className="font-game text-3xl text-purple-700 mb-2">🎮 Игровой Зал</h2>
+        <p className="text-gray-500">Выбери уровень и начни прокачку знаний!</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {(['easy', 'medium', 'hard'] as Difficulty[]).map(diff => (
-          <div key={diff} className="card-game rounded-2xl p-6 text-center hover-lift cursor-pointer" style={{ border: '1px solid hsl(var(--border))' }} onClick={() => { setSelectedDifficulty(diff); setSection('catalog'); }}>
-            <div className="text-5xl mb-4">{diff === 'easy' ? '🌱' : diff === 'medium' ? '⚔️' : '🔥'}</div>
-            <h3 className="font-game text-xl text-white mb-2">{difficultyLabel[diff]}</h3>
-            <p className="text-muted-foreground text-sm mb-4">{diff === 'easy' ? '10 игр · 40-60 XP за игру' : diff === 'medium' ? '10 игр · 75-95 XP за игру' : '10 игр · 140-200 XP за игру'}</p>
-            <div className="text-xs font-semibold px-3 py-1 rounded-full inline-block" style={{
-              background: diff === 'easy' ? 'rgba(16,185,129,0.2)' : diff === 'medium' ? 'rgba(245,158,11,0.2)' : 'rgba(239,68,68,0.2)',
-              color: diff === 'easy' ? '#10b981' : diff === 'medium' ? '#f59e0b' : '#ef4444',
-            }}>
-              {diff === 'easy' ? '7 класс' : diff === 'medium' ? '8 класс' : '9 класс'}
+        {(['easy', 'medium', 'hard'] as Difficulty[]).map(diff => {
+          const colors = {
+            easy: { bg: '#d1fae5', border: '#6ee7b7', text: '#065f46', badge: '#ecfdf5' },
+            medium: { bg: '#fef3c7', border: '#fcd34d', text: '#92400e', badge: '#fffbeb' },
+            hard: { bg: '#fee2e2', border: '#fca5a5', text: '#991b1b', badge: '#fff1f2' },
+          }[diff];
+          return (
+            <div
+              key={diff}
+              className="card-game rounded-2xl p-6 text-center hover-lift cursor-pointer border-2"
+              style={{ borderColor: colors.border, background: colors.bg }}
+              onClick={() => { setSelectedDifficulty(diff); setSection('catalog'); }}
+            >
+              <div className="text-5xl mb-4">{diff === 'easy' ? '🌱' : diff === 'medium' ? '⚔️' : '🔥'}</div>
+              <h3 className="font-game text-xl mb-2" style={{ color: colors.text }}>{difficultyLabel[diff]}</h3>
+              <p className="text-sm mb-4" style={{ color: colors.text, opacity: 0.7 }}>{diff === 'easy' ? '10 игр · 40-60 XP за игру' : diff === 'medium' ? '10 игр · 75-95 XP за игру' : '10 игр · 140-200 XP за игру'}</p>
+              <div className="text-xs font-semibold px-3 py-1 rounded-full inline-block border" style={{ background: colors.badge, color: colors.text, borderColor: colors.border }}>
+                {diff === 'easy' ? '7 класс' : diff === 'medium' ? '8 класс' : '9 класс'}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      <div className="card-game rounded-2xl p-6" style={{ border: '1px solid hsl(var(--border))' }}>
-        <h3 className="font-game text-lg text-white mb-4">🏅 Твой прогресс</h3>
+      <div className="card-game rounded-2xl p-6">
+        <h3 className="font-game text-lg text-purple-700 mb-4">🏅 Твой прогресс</h3>
         <div className="grid grid-cols-3 gap-4">
           {[
             { label: 'Игр пройдено', value: completedGames.length, max: 30, color: '#7c3aed', emoji: '🎮' },
@@ -187,9 +199,9 @@ export function GamesSection({ completedGames, totalXP, setSelectedDifficulty, s
           ].map(stat => (
             <div key={stat.label} className="text-center">
               <div className="text-3xl mb-1">{stat.emoji}</div>
-              <div className="font-game text-2xl text-white mb-1">{stat.value}</div>
-              <div className="text-xs text-muted-foreground mb-2">{stat.label}</div>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'hsl(var(--muted))' }}>
+              <div className="font-game text-2xl text-gray-800 mb-1">{stat.value}</div>
+              <div className="text-xs text-gray-500 mb-2">{stat.label}</div>
+              <div className="h-2 rounded-full overflow-hidden bg-gray-100">
                 <div className="h-full rounded-full" style={{ width: `${Math.min((stat.value / stat.max) * 100, 100)}%`, background: stat.color }} />
               </div>
             </div>

@@ -107,8 +107,8 @@ export default function Index() {
         )}
       </main>
 
-      <footer className="border-t mt-16 py-6 text-center" style={{ borderColor: 'hsl(var(--border))' }}>
-        <p className="text-muted-foreground text-sm">🚀 КодоГерой · Дидактические игры по информатике · 7-9 класс</p>
+      <footer className="border-t-2 border-purple-100 mt-16 py-6 text-center bg-white">
+        <p className="text-gray-400 text-sm">🎓 КодоГерой · Дидактические игры по информатике · 7-9 класс</p>
       </footer>
 
       {activeGame && (
