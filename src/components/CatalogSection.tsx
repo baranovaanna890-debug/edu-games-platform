@@ -95,6 +95,9 @@ export function CatalogSection({
                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${difficultyClass[game.difficulty]}`}>
                   {difficultyLabel[game.difficulty]}
                 </span>
+                {game.type === 'quest' && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">📖 Квест</span>
+                )}
                 {(game.type === 'match' || game.type === 'sort') && (
                   <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">🎮 Интерактивная</span>
                 )}

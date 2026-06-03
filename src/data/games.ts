@@ -1,5 +1,5 @@
 export type Difficulty = 'easy' | 'medium' | 'hard';
-export type GameType = 'quiz' | 'match' | 'sort' | 'fill' | 'code' | 'logic';
+export type GameType = 'quiz' | 'match' | 'sort' | 'fill' | 'code' | 'logic' | 'quest';
 
 export interface Game {
   id: number;
@@ -16,6 +16,7 @@ export interface Game {
   matchPairs?: MatchPair[];
   sortItems?: SortItem[];
   fillBlanks?: FillBlank[];
+  quest?: QuestData;
 }
 
 export interface QuizQuestion {
@@ -41,7 +42,231 @@ export interface FillBlank {
   answers: string[];
 }
 
+export interface QuestScene {
+  id: string;
+  character: string;
+  avatar: string;
+  text: string;
+  type: 'dialog' | 'choice' | 'input' | 'result';
+  choices?: { label: string; correct: boolean; nextId: string; response: string }[];
+  nextId?: string;
+  isEnd?: boolean;
+  xpBonus?: number;
+}
+
+export interface QuestData {
+  scenes: QuestScene[];
+  startId: string;
+}
+
 export const games: Game[] = [
+  // === КВЕСТ-ИГРЫ ===
+  {
+    id: 201,
+    title: 'Миссия: Спаси данные!',
+    description: 'Робот Байт попал в беду — помоги ему восстановить файлы, отвечая на вопросы об устройстве компьютера',
+    topic: 'Аппаратное обеспечение',
+    grade: '7 класс',
+    difficulty: 'easy',
+    type: 'quest',
+    emoji: '🤖',
+    xp: 70,
+    duration: '7 мин',
+    quest: {
+      startId: 's1',
+      scenes: [
+        {
+          id: 's1',
+          character: 'Байт',
+          avatar: '🤖',
+          text: 'Привет! Я робот Байт. Произошла катастрофа — вирус атаковал компьютер и стёр важные файлы! Мне нужна твоя помощь. Ты готов помочь мне разобраться с устройством компьютера, чтобы мы всё восстановили?',
+          type: 'choice',
+          choices: [
+            { label: 'Конечно, я готов!', correct: true, nextId: 's2', response: 'Отлично! Я знал, что могу на тебя рассчитывать!' },
+            { label: 'Звучит сложно...', correct: true, nextId: 's2', response: 'Не бойся, мы справимся вместе! Главное — не паниковать.' },
+          ],
+        },
+        {
+          id: 's2',
+          character: 'Байт',
+          avatar: '🤖',
+          text: 'Отлично! Первым делом нужно проверить "мозг" компьютера. Скажи мне — как называется главное устройство обработки данных?',
+          type: 'choice',
+          choices: [
+            { label: 'Процессор (CPU)', correct: true, nextId: 's3', response: '✅ Верно! Процессор — это "мозг" компьютера. Он живой, можем идти дальше!' },
+            { label: 'Оперативная память', correct: false, nextId: 's2b', response: '❌ Нет, RAM — это временная память. Попробуй ещё раз!' },
+            { label: 'Жёсткий диск', correct: false, nextId: 's2b', response: '❌ Жёсткий диск хранит данные, но не обрабатывает их. Подумай ещё!' },
+          ],
+        },
+        {
+          id: 's2b',
+          character: 'Байт',
+          avatar: '🤖',
+          text: 'Не совсем верно. Подсказка: это устройство выполняет все вычисления и управляет другими компонентами. Аббревиатура — CPU.',
+          type: 'choice',
+          choices: [
+            { label: 'Процессор (CPU)', correct: true, nextId: 's3', response: '✅ Теперь правильно! Процессор жив, продолжаем!' },
+          ],
+        },
+        {
+          id: 's3',
+          character: 'Байт',
+          avatar: '🤖',
+          text: 'Уф, один компонент спасён! Теперь проверим хранилище. Файлы хранятся постоянно, даже когда компьютер выключен. Какое устройство за это отвечает?',
+          type: 'choice',
+          choices: [
+            { label: 'Жёсткий диск (HDD/SSD)', correct: true, nextId: 's4', response: '✅ Именно! HDD и SSD — постоянное хранилище данных. Файлы найдены!' },
+            { label: 'Оперативная память (RAM)', correct: false, nextId: 's3b', response: '❌ RAM очищается при выключении. Файлы там не хранятся!' },
+            { label: 'Видеокарта', correct: false, nextId: 's3b', response: '❌ Видеокарта выводит картинку на экран, это другое.' },
+          ],
+        },
+        {
+          id: 's3b',
+          character: 'Байт',
+          avatar: '🤖',
+          text: 'Подсказка: это устройство работает даже когда компьютер выключен. Данные не исчезают. Бывает двух видов: HDD и SSD.',
+          type: 'choice',
+          choices: [
+            { label: 'Жёсткий диск (HDD/SSD)', correct: true, nextId: 's4', response: '✅ Правильно! Файлы в безопасности!' },
+          ],
+        },
+        {
+          id: 's4',
+          character: 'Байт',
+          avatar: '🤖',
+          text: 'Прекрасно! Осталось проверить устройства ввода. Через что пользователь вводит текст в компьютер?',
+          type: 'choice',
+          choices: [
+            { label: 'Клавиатура', correct: true, nextId: 's5', response: '✅ Верно! Клавиатура — главное устройство ввода текста.' },
+            { label: 'Монитор', correct: false, nextId: 's4b', response: '❌ Монитор — устройство вывода, он отображает, но не принимает ввод.' },
+            { label: 'Принтер', correct: false, nextId: 's4b', response: '❌ Принтер — устройство вывода (печати), не ввода.' },
+          ],
+        },
+        {
+          id: 's4b',
+          character: 'Байт',
+          avatar: '🤖',
+          text: 'Подсказка: это устройство, на котором есть буквы, цифры и специальные клавиши. Ты используешь его прямо сейчас!',
+          type: 'choice',
+          choices: [
+            { label: 'Клавиатура', correct: true, nextId: 's5', response: '✅ Конечно! Клавиатура — вот она!' },
+          ],
+        },
+        {
+          id: 's5',
+          character: 'Байт',
+          avatar: '🤖',
+          text: 'Ты справился! Все компоненты компьютера проверены и работают. Файлы восстановлены! Ты настоящий герой информатики! 🎉',
+          type: 'result',
+          isEnd: true,
+          xpBonus: 70,
+        },
+      ],
+    },
+  },
+  {
+    id: 202,
+    title: 'Детектив Нет: Тайна сети',
+    description: 'Детектив Нет расследует преступление в интернете. Помоги ему разобраться в сетевых протоколах!',
+    topic: 'Компьютерные сети',
+    grade: '8 класс',
+    difficulty: 'medium',
+    type: 'quest',
+    emoji: '🕵️',
+    xp: 90,
+    duration: '8 мин',
+    quest: {
+      startId: 'n1',
+      scenes: [
+        {
+          id: 'n1',
+          character: 'Детектив Нет',
+          avatar: '🕵️',
+          text: 'Добро пожаловать в моё агентство! Я — детектив Нет, специализируюсь на киберпреступлениях. Поступило дело: хакер проник в школьную сеть и украл данные. Ты поможешь мне его поймать?',
+          type: 'choice',
+          choices: [
+            { label: '🔍 Принять дело!', correct: true, nextId: 'n2', response: 'Отличный выбор! Приступаем к расследованию.' },
+            { label: '😎 Я уже на месте!', correct: true, nextId: 'n2', response: 'Вот это настрой! Начинаем!' },
+          ],
+        },
+        {
+          id: 'n2',
+          character: 'Детектив Нет',
+          avatar: '🕵️',
+          text: 'Улика №1 🔎 Хакер подключился через веб-браузер. Какой протокол используется для безопасной передачи веб-страниц (с шифрованием)?',
+          type: 'choice',
+          choices: [
+            { label: 'HTTPS', correct: true, nextId: 'n3', response: '✅ Точно! HTTPS — это HTTP + шифрование SSL. Хакер использовал незащищённый HTTP, это наш след!' },
+            { label: 'HTTP', correct: false, nextId: 'n2b', response: '❌ HTTP — незащищённый протокол, без шифрования. А нам нужен защищённый.' },
+            { label: 'FTP', correct: false, nextId: 'n2b', response: '❌ FTP — протокол передачи файлов, не веб-страниц.' },
+          ],
+        },
+        {
+          id: 'n2b',
+          character: 'Детектив Нет',
+          avatar: '🕵️',
+          text: 'Улика повторная 🔎 Подсказка: если в адресе сайта написано "https://", значит соединение защищено. Буква S означает Secure (безопасный).',
+          type: 'choice',
+          choices: [
+            { label: 'HTTPS', correct: true, nextId: 'n3', response: '✅ Верно! Запомни: замочек в браузере = HTTPS = безопасно.' },
+          ],
+        },
+        {
+          id: 'n3',
+          character: 'Детектив Нет',
+          avatar: '🕵️',
+          text: 'Улика №2 🔎 По логам мы видим IP-адрес хакера: 192.168.1.105. Что такое IP-адрес?',
+          type: 'choice',
+          choices: [
+            { label: 'Уникальный числовой адрес устройства в сети', correct: true, nextId: 'n4', response: '✅ Правильно! Как домашний адрес, только для компьютера в сети. Мы знаем где он!' },
+            { label: 'Имя пользователя в сети', correct: false, nextId: 'n3b', response: '❌ Нет, это не имя пользователя. Имя — это логин, а IP — числовой адрес.' },
+            { label: 'Скорость интернета', correct: false, nextId: 'n3b', response: '❌ Скорость измеряется в Мбит/с, а IP — это адрес устройства.' },
+          ],
+        },
+        {
+          id: 'n3b',
+          character: 'Детектив Нет',
+          avatar: '🕵️',
+          text: 'Подсказка 🔎 Думай как почтальон: у каждого дома есть адрес (улица, дом). У каждого устройства в сети тоже есть свой "адрес" — набор цифр через точки.',
+          type: 'choice',
+          choices: [
+            { label: 'Уникальный числовой адрес устройства в сети', correct: true, nextId: 'n4', response: '✅ Именно! 192.168.1.105 — это адрес компьютера хакера!' },
+          ],
+        },
+        {
+          id: 'n4',
+          character: 'Детектив Нет',
+          avatar: '🕵️',
+          text: 'Улика №3 🔎 Хакер использовал DNS для нахождения сервера. Что делает DNS-сервер?',
+          type: 'choice',
+          choices: [
+            { label: 'Переводит доменные имена в IP-адреса', correct: true, nextId: 'n5', response: '✅ Верно! DNS — это "телефонная книга" интернета. Ты набираешь "google.com", DNS переводит в IP.' },
+            { label: 'Шифрует данные в сети', correct: false, nextId: 'n4b', response: '❌ Шифрованием занимается SSL/TLS, а DNS — это другое.' },
+            { label: 'Хранит все файлы интернета', correct: false, nextId: 'n4b', response: '❌ Файлы хранятся на веб-серверах, а DNS только переводит имена в адреса.' },
+          ],
+        },
+        {
+          id: 'n4b',
+          character: 'Детектив Нет',
+          avatar: '🕵️',
+          text: 'Подсказка 🔎 DNS = Domain Name System. Когда ты пишешь "vk.com" в браузере, DNS находит IP-адрес этого сайта. Как справочник имён и номеров телефонов.',
+          type: 'choice',
+          choices: [
+            { label: 'Переводит доменные имена в IP-адреса', correct: true, nextId: 'n5', response: '✅ Отлично! Теперь ты знаешь как работает DNS.' },
+          ],
+        },
+        {
+          id: 'n5',
+          character: 'Детектив Нет',
+          avatar: '🕵️',
+          text: '🎉 Дело раскрыто! Благодаря твоим знаниям о сетевых протоколах мы отследили хакера по IP-адресу, разобрались с DNS и HTTPS. Ты прирождённый сетевой детектив! Школьные данные в безопасности!',
+          type: 'result',
+          isEnd: true,
+          xpBonus: 90,
+        },
+      ],
+    },
+  },
   // === ИНТЕРАКТИВНЫЕ ИГРЫ ===
   {
     id: 101,

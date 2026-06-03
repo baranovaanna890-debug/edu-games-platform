@@ -4,6 +4,7 @@ import { CatalogSection } from '@/components/CatalogSection';
 import { StatsSection, CertificateSection, ContactSection } from '@/components/SideSection';
 import GameModal from '@/components/GameModal';
 import InteractiveGameModal from '@/components/InteractiveGameModal';
+import QuestGameModal from '@/components/QuestGameModal';
 
 type Section = 'catalog' | 'stats' | 'certificate' | 'contact';
 
@@ -72,6 +73,7 @@ export default function Index() {
     setActiveGame(null);
   }
 
+  const isQuest = activeGame?.type === 'quest';
   const isInteractive = activeGame && (activeGame.type === 'match' || activeGame.type === 'sort');
 
   return (
@@ -134,7 +136,15 @@ export default function Index() {
         <p className="text-gray-400 text-sm">КодоГерой · Дидактические игры по информатике · 7-9 класс</p>
       </footer>
 
-      {activeGame && isInteractive && (
+      {activeGame && isQuest && (
+        <QuestGameModal
+          activeGame={activeGame}
+          onClose={() => setActiveGame(null)}
+          onFinish={handleInteractiveFinish}
+        />
+      )}
+
+      {activeGame && isInteractive && !isQuest && (
         <InteractiveGameModal
           activeGame={activeGame}
           onClose={() => setActiveGame(null)}
@@ -142,7 +152,7 @@ export default function Index() {
         />
       )}
 
-      {activeGame && !isInteractive && (
+      {activeGame && !isInteractive && !isQuest && (
         <GameModal
           activeGame={activeGame}
           gameStep={gameStep}
