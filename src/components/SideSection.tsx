@@ -344,6 +344,15 @@ export function RatingSection({ completedGames, totalXP }: RatingProps) {
 }
 
 export function ContactSection() {
+  const [name, setName] = useState('');
+  const [message, setMessage] = useState('');
+  const [sent, setSent] = useState(false);
+
+  function handleSend() {
+    if (!name.trim() || !message.trim()) return;
+    setSent(true);
+  }
+
   return (
     <div className="max-w-2xl mx-auto">
       <h2 className="font-game text-2xl text-purple-700 mb-1">💬 Контакты</h2>
@@ -351,48 +360,78 @@ export function ContactSection() {
 
       <div className="space-y-3 mb-6">
         <div className="bg-white rounded-xl border-2 border-purple-100 p-4 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-purple-50">
-            📧
-          </div>
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-purple-50">📧</div>
           <div>
-            <div className="font-semibold text-sm text-gray-700">
-              Электронная почта
-            </div>
-            <div className="text-sm font-semibold text-purple-600">
-              baranovaanna890@gmail.com
-            </div>
-            <div className="text-xs text-gray-400">
-              Ответим в течение 24 часов
-            </div>
+            <div className="font-semibold text-sm text-gray-700">Электронная почта</div>
+            <div className="text-sm font-semibold text-purple-600">baranovaanna890@gmail.com</div>
+            <div className="text-xs text-gray-400">Ответим в течение 24 часов</div>
           </div>
         </div>
 
         <div className="bg-white rounded-xl border-2 border-pink-100 p-4 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-pink-50">
-            📱
-          </div>
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-pink-50">📱</div>
           <div>
             <div className="font-semibold text-sm text-gray-700">Телефон</div>
-            <div className="text-sm font-semibold text-purple-600">
-              +7 (913) 066-73-92
-            </div>
+            <div className="text-sm font-semibold text-purple-600">+7 (913) 066-73-92</div>
             <div className="text-xs text-gray-400">Пн–Пт с 8:00 до 17:00</div>
           </div>
         </div>
 
         <div className="bg-white rounded-xl border-2 border-blue-100 p-4 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-blue-50">
-            🏫
-          </div>
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-blue-50">🏫</div>
           <div>
-            <div className="font-semibold text-sm text-gray-700">
-              Педагог-разработчик
-            </div>
-            <div className="text-sm font-semibold text-purple-600">
-              Баранова Анна
-            </div>
+            <div className="font-semibold text-sm text-gray-700">Педагог-разработчик</div>
+            <div className="text-sm font-semibold text-purple-600">Баранова Анна</div>
           </div>
         </div>
+      </div>
+
+      {/* Форма обратной связи */}
+      <div className="bg-white rounded-xl border-2 border-gray-100 p-5">
+        <h3 className="font-semibold text-gray-700 mb-4">📝 Написать сообщение</h3>
+
+        {sent ? (
+          <div className="text-center py-6">
+            <div className="text-5xl mb-3">✉️</div>
+            <p className="font-semibold text-green-700 mb-1">Сообщение отправлено!</p>
+            <p className="text-sm text-gray-400 mb-4">Спасибо, {name}! Мы свяжемся с тобой в ближайшее время.</p>
+            <button
+              onClick={() => { setSent(false); setName(''); setMessage(''); }}
+              className="px-5 py-2 rounded-lg text-sm font-semibold text-purple-700 border-2 border-purple-200 hover:bg-purple-50 transition-colors"
+            >
+              Написать ещё
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 mb-1 block">Твоё имя</label>
+              <input
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="Например: Иван Иванов"
+                className="w-full px-4 py-3 rounded-xl text-sm text-gray-800 placeholder:text-gray-300 outline-none border-2 border-gray-200 focus:border-purple-400 bg-gray-50 transition-colors"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 mb-1 block">Сообщение</label>
+              <textarea
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                placeholder="Напиши свой вопрос или отзыв об игре..."
+                rows={4}
+                className="w-full px-4 py-3 rounded-xl text-sm text-gray-800 placeholder:text-gray-300 outline-none resize-none border-2 border-gray-200 focus:border-purple-400 bg-gray-50 transition-colors"
+              />
+            </div>
+            <button
+              onClick={handleSend}
+              disabled={!name.trim() || !message.trim()}
+              className="w-full py-3 rounded-xl font-semibold text-sm text-white bg-purple-600 hover:bg-purple-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Отправить сообщение
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
