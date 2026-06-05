@@ -1,5 +1,5 @@
 export type Difficulty = 'easy' | 'medium' | 'hard';
-export type GameType = 'quiz' | 'match' | 'sort' | 'fill' | 'code' | 'logic' | 'quest';
+export type GameType = 'quiz' | 'match' | 'sort' | 'fill' | 'code' | 'logic' | 'quest' | 'oddone' | 'typetext' | 'truefalse' | 'numpad';
 
 export interface Game {
   id: number;
@@ -17,6 +17,10 @@ export interface Game {
   sortItems?: SortItem[];
   fillBlanks?: FillBlank[];
   quest?: QuestData;
+  oddOneRounds?: OddOneRound[];
+  typeTextRounds?: TypeTextRound[];
+  trueFalseCards?: TrueFalseCard[];
+  numpadRounds?: NumpadRound[];
 }
 
 export interface QuizQuestion {
@@ -42,6 +46,31 @@ export interface FillBlank {
   answers: string[];
 }
 
+export interface OddOneRound {
+  items: string[];
+  oddIndex: number;
+  explanation: string;
+}
+
+export interface TypeTextRound {
+  prompt: string;
+  answer: string;
+  hint: string;
+}
+
+export interface TrueFalseCard {
+  statement: string;
+  isTrue: boolean;
+  explanation: string;
+}
+
+export interface NumpadRound {
+  question: string;
+  answer: number;
+  unit: string;
+  hint: string;
+}
+
 export interface QuestScene {
   id: string;
   character: string;
@@ -60,6 +89,168 @@ export interface QuestData {
 }
 
 export const games: Game[] = [
+  // === НАЙДИ ЛИШНЕЕ ===
+  {
+    id: 301,
+    title: 'Найди лишнее: Железо',
+    description: 'Три предмета связаны по смыслу, один — чужой. Найди его!',
+    topic: 'Аппаратное обеспечение',
+    grade: '7 класс',
+    difficulty: 'easy',
+    type: 'oddone',
+    emoji: '🔍',
+    xp: 50,
+    duration: '4 мин',
+    oddOneRounds: [
+      { items: ['Процессор', 'Клавиатура', 'Оперативная память', 'Видеокарта'], oddIndex: 1, explanation: 'Клавиатура — устройство ввода. Остальные три — внутренние компоненты компьютера.' },
+      { items: ['Монитор', 'Принтер', 'Сканер', 'Колонки'], oddIndex: 2, explanation: 'Сканер — устройство ввода. Остальные три — устройства вывода.' },
+      { items: ['HDD', 'SSD', 'Flash-накопитель', 'Процессор'], oddIndex: 3, explanation: 'Процессор обрабатывает данные. Остальные три — устройства хранения данных.' },
+      { items: ['Wi-Fi', 'Bluetooth', 'Ethernet', 'HDMI'], oddIndex: 3, explanation: 'HDMI — видеоинтерфейс. Остальные три — сетевые технологии передачи данных.' },
+      { items: ['Python', 'Java', 'HTML', 'C++'], oddIndex: 2, explanation: 'HTML — язык разметки, а не программирования. Остальные три — языки программирования.' },
+    ],
+  },
+  {
+    id: 302,
+    title: 'Найди лишнее: Программирование',
+    description: 'Найди слово, которое не подходит к остальным трём',
+    topic: 'Основы программирования',
+    grade: '8 класс',
+    difficulty: 'medium',
+    type: 'oddone',
+    emoji: '🕵️',
+    xp: 70,
+    duration: '5 мин',
+    oddOneRounds: [
+      { items: ['if', 'else', 'elif', 'import'], oddIndex: 3, explanation: 'import подключает библиотеки. Остальные три — операторы условного ветвления.' },
+      { items: ['for', 'while', 'loop', 'range'], oddIndex: 2, explanation: 'loop — не ключевое слово Python. Остальные три реально используются в циклах Python.' },
+      { items: ['int', 'float', 'bool', 'print'], oddIndex: 3, explanation: 'print — функция вывода. Остальные три — типы данных в Python.' },
+      { items: ['append', 'remove', 'pop', 'split'], oddIndex: 3, explanation: 'split — метод строки. Остальные три — методы списка (list).' },
+      { items: ['def', 'return', 'class', 'SELECT'], oddIndex: 3, explanation: 'SELECT — оператор SQL, не Python. Остальные три — ключевые слова Python.' },
+    ],
+  },
+
+  // === НАПЕЧАТАЙ КОД ===
+  {
+    id: 303,
+    title: 'Напечатай: Python',
+    description: 'Повтори строку кода точно — тренируй навык письма на Python',
+    topic: 'Программирование на Python',
+    grade: '8 класс',
+    difficulty: 'easy',
+    type: 'typetext',
+    emoji: '⌨️',
+    xp: 60,
+    duration: '5 мин',
+    typeTextRounds: [
+      { prompt: 'Как вывести "Привет" на экран?', answer: 'print("Привет")', hint: 'Функция вывода + текст в кавычках' },
+      { prompt: 'Как объявить переменную x со значением 10?', answer: 'x = 10', hint: 'Имя переменной, знак равно, значение' },
+      { prompt: 'Как начать цикл от 0 до 4 (5 раз)?', answer: 'for i in range(5):', hint: 'for, имя переменной, in range(количество):' },
+      { prompt: 'Как объявить функцию с именем greet?', answer: 'def greet():', hint: 'def, пробел, имя функции, скобки, двоеточие' },
+      { prompt: 'Как проверить: если x больше 0?', answer: 'if x > 0:', hint: 'if, условие, двоеточие в конце' },
+    ],
+  },
+  {
+    id: 304,
+    title: 'Напечатай: SQL',
+    description: 'Вводи SQL-запросы руками — самый быстрый способ запомнить синтаксис',
+    topic: 'Базы данных',
+    grade: '9 класс',
+    difficulty: 'medium',
+    type: 'typetext',
+    emoji: '🗄️',
+    xp: 80,
+    duration: '6 мин',
+    typeTextRounds: [
+      { prompt: 'Выбери все записи из таблицы users', answer: 'SELECT * FROM users;', hint: 'SELECT *, FROM, имя таблицы, точка с запятой' },
+      { prompt: 'Выбери только поле name из таблицы students', answer: 'SELECT name FROM students;', hint: 'SELECT поле FROM таблица;' },
+      { prompt: 'Удали запись где id равен 5', answer: 'DELETE FROM users WHERE id = 5;', hint: 'DELETE FROM таблица WHERE условие;' },
+      { prompt: 'Создай таблицу с полем id (тип INTEGER)', answer: 'CREATE TABLE test (id INTEGER);', hint: 'CREATE TABLE имя (поле тип);' },
+      { prompt: 'Добавь запись "Аня" в поле name таблицы students', answer: 'INSERT INTO students (name) VALUES ("Аня");', hint: 'INSERT INTO таблица (поле) VALUES (значение);' },
+    ],
+  },
+
+  // === ВЕРНО / НЕВЕРНО ===
+  {
+    id: 305,
+    title: 'Верно или нет: Сети',
+    description: 'Читай утверждение и быстро решай: правда это или ложь?',
+    topic: 'Компьютерные сети',
+    grade: '8 класс',
+    difficulty: 'easy',
+    type: 'truefalse',
+    emoji: '✅',
+    xp: 55,
+    duration: '4 мин',
+    trueFalseCards: [
+      { statement: 'IP-адрес — это уникальный адрес устройства в сети', isTrue: true, explanation: 'Верно! IP-адрес идентифицирует каждое устройство в сети, как домашний адрес.' },
+      { statement: 'HTTP и HTTPS — это одно и то же', isTrue: false, explanation: 'Неверно! HTTPS добавляет шифрование SSL/TLS, что делает передачу безопасной.' },
+      { statement: 'DNS переводит доменные имена в IP-адреса', isTrue: true, explanation: 'Верно! DNS (Domain Name System) — как телефонная книга интернета.' },
+      { statement: 'Wi-Fi — это проводная технология передачи данных', isTrue: false, explanation: 'Неверно! Wi-Fi — беспроводная технология. Проводная — это Ethernet.' },
+      { statement: 'Порт 80 используется для HTTP', isTrue: true, explanation: 'Верно! HTTP = порт 80, HTTPS = порт 443 — стандартные назначения.' },
+      { statement: 'Браузер — это операционная система', isTrue: false, explanation: 'Неверно! Браузер — прикладная программа для просмотра сайтов. ОС — Windows, Linux.' },
+    ],
+  },
+  {
+    id: 306,
+    title: 'Верно или нет: Python',
+    description: 'Проверь каждое утверждение о языке Python — правда или миф?',
+    topic: 'Программирование на Python',
+    grade: '9 класс',
+    difficulty: 'medium',
+    type: 'truefalse',
+    emoji: '🐍',
+    xp: 75,
+    duration: '5 мин',
+    trueFalseCards: [
+      { statement: 'В Python индексация списков начинается с 0', isTrue: true, explanation: 'Верно! list[0] — первый элемент, list[1] — второй.' },
+      { statement: 'Python чувствителен к регистру: Variable и variable — одно и то же', isTrue: false, explanation: 'Неверно! Python чувствителен к регистру: Variable и variable — разные переменные.' },
+      { statement: 'Функция len() возвращает длину строки или списка', isTrue: true, explanation: 'Верно! len("hello") = 5, len([1,2,3]) = 3.' },
+      { statement: 'Для создания функции в Python используется ключевое слово function', isTrue: false, explanation: 'Неверно! В Python используется def, а не function.' },
+      { statement: 'Список (list) в Python может содержать элементы разных типов', isTrue: true, explanation: 'Верно! [1, "текст", True, 3.14] — абсолютно допустимый список Python.' },
+      { statement: 'Оператор == присваивает значение переменной', isTrue: false, explanation: 'Неверно! == сравнивает значения. Присваивание — это одинарный знак = .' },
+    ],
+  },
+
+  // === ЧИСЛОВОЙ ВВОД ===
+  {
+    id: 307,
+    title: 'Числа информатики',
+    description: 'Введи правильное число — проверь знание ключевых констант информатики',
+    topic: 'Представление информации',
+    grade: '7 класс',
+    difficulty: 'easy',
+    type: 'numpad',
+    emoji: '🔢',
+    xp: 50,
+    duration: '4 мин',
+    numpadRounds: [
+      { question: 'Сколько бит в одном байте?', answer: 8, unit: 'бит', hint: 'Это основная единица — запомни раз и навсегда!' },
+      { question: 'Сколько байт в одном килобайте?', answer: 1024, unit: 'байт', hint: '2 в степени 10 = ...' },
+      { question: 'Сколько символов в стандартной таблице ASCII?', answer: 128, unit: 'символов', hint: '2 в степени 7 = ...' },
+      { question: 'Сколько цифр используется в двоичной системе счисления?', answer: 2, unit: 'цифры', hint: 'Двоичная — потому что...' },
+      { question: 'Сколько цифр и букв в шестнадцатеричной системе (0-9 и A-F)?', answer: 16, unit: 'символов', hint: 'Hex = hexa (шесть) + decimal (десять)' },
+    ],
+  },
+  {
+    id: 308,
+    title: 'Числа и коды',
+    description: 'Переводи числа между системами счисления — вводи ответ цифрами',
+    topic: 'Системы счисления',
+    grade: '8 класс',
+    difficulty: 'medium',
+    type: 'numpad',
+    emoji: '💡',
+    xp: 80,
+    duration: '6 мин',
+    numpadRounds: [
+      { question: 'Двоичное 1010 в десятичной системе =', answer: 10, unit: '', hint: '1×8 + 0×4 + 1×2 + 0×1 = ?' },
+      { question: 'Двоичное 1111 в десятичной системе =', answer: 15, unit: '', hint: '8 + 4 + 2 + 1 = ?' },
+      { question: 'Десятичное 16 в двоичной системе — сколько знаков в записи?', answer: 5, unit: 'знаков', hint: '16 = 10000₂ — считай цифры' },
+      { question: 'Шестнадцатеричное FF в десятичной системе =', answer: 255, unit: '', hint: '15×16 + 15×1 = ?' },
+      { question: 'Чему равен факториал 5 (5!)?', answer: 120, unit: '', hint: '5 × 4 × 3 × 2 × 1 = ?' },
+    ],
+  },
+
   // === КВЕСТ-ИГРЫ ===
   {
     id: 201,

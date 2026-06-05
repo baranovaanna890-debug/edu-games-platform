@@ -74,7 +74,8 @@ export default function Index() {
   }
 
   const isQuest = activeGame?.type === 'quest';
-  const isInteractive = activeGame && (activeGame.type === 'match' || activeGame.type === 'sort');
+  const interactiveTypes = ['match', 'sort', 'oddone', 'typetext', 'truefalse', 'numpad'];
+  const isInteractive = activeGame && interactiveTypes.includes(activeGame.type);
 
   return (
     <div className="min-h-screen bg-gray-50">

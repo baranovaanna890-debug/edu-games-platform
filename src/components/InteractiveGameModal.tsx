@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Icon from '@/components/ui/icon';
 import type { Game } from '@/data/games';
 
@@ -264,10 +264,449 @@ function SortGame({ activeGame, onClose, onFinish }: Props) {
 }
 
 // ============================================================
+// ШАПКА — общий компонент
+// ============================================================
+function GameHeader({ activeGame, onClose }: { activeGame: Game; onClose: () => void }) {
+  return (
+    <div className="p-4 flex items-center justify-between bg-purple-50 border-b border-purple-100">
+      <div className="flex items-center gap-3">
+        <span className="text-3xl">{activeGame.emoji}</span>
+        <div>
+          <p className="font-semibold text-purple-800">{activeGame.title}</p>
+          <p className="text-xs text-gray-400">{activeGame.grade} · {activeGame.duration}</p>
+        </div>
+      </div>
+      <button onClick={onClose} className="text-gray-400 hover:text-gray-700">
+        <Icon name="X" size={20} />
+      </button>
+    </div>
+  );
+}
+
+// ============================================================
+// ЭКРАН ПОБЕДЫ — общий компонент
+// ============================================================
+function WinScreen({ xp, onFinish, label = 'Отличная работа!' }: { xp: number; onFinish: () => void; label?: string }) {
+  return (
+    <div className="p-8 text-center">
+      <div className="text-6xl mb-4">🏆</div>
+      <h2 className="font-game text-2xl text-purple-700 mb-2">{label}</h2>
+      <div className="flex items-center justify-center gap-2 mb-6 p-3 rounded-xl bg-yellow-50 border border-yellow-200">
+        <span className="text-2xl">⚡</span>
+        <span className="font-game text-yellow-500 text-lg">+{xp} XP</span>
+      </div>
+      <button onClick={onFinish} className="w-full py-3 rounded-xl font-semibold text-white bg-purple-600 hover:bg-purple-700 transition-colors">
+        К каталогу
+      </button>
+    </div>
+  );
+}
+
+// ============================================================
+// ИГРА «НАЙДИ ЛИШНЕЕ» (type: oddone)
+// ============================================================
+function OddOneGame({ activeGame, onClose, onFinish }: Props) {
+  const rounds = activeGame.oddOneRounds!;
+  const [idx, setIdx] = useState(0);
+  const [chosen, setChosen] = useState<number | null>(null);
+  const [errors, setErrors] = useState(0);
+  const [done, setDone] = useState(false);
+
+  const round = rounds[idx];
+
+  function pick(i: number) {
+    if (chosen !== null) return;
+    setChosen(i);
+    if (i !== round.oddIndex) setErrors(e => e + 1);
+    setTimeout(() => {
+      if (idx + 1 >= rounds.length) {
+        setDone(true);
+      } else {
+        setIdx(n => n + 1);
+        setChosen(null);
+      }
+    }, 1200);
+  }
+
+  const xpEarned = errors === 0 ? activeGame.xp : Math.max(Math.floor(activeGame.xp * 0.6), 15);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
+      <div className="bg-white rounded-2xl border-2 border-orange-300 shadow-2xl w-full max-w-md overflow-hidden">
+        <GameHeader activeGame={activeGame} onClose={onClose} />
+
+        {done ? (
+          <WinScreen xp={xpEarned} onFinish={() => onFinish(xpEarned)} label={errors === 0 ? 'Ни одной ошибки! 🎯' : 'Раунды пройдены!'} />
+        ) : (
+          <div className="p-6">
+            <div className="flex justify-between text-xs text-gray-400 mb-4">
+              <span>Раунд {idx + 1} из {rounds.length}</span>
+              <span>Ошибок: {errors}</span>
+            </div>
+            <p className="text-center text-gray-700 font-semibold mb-5 text-sm">Найди лишнее — три связаны, одно чужое</p>
+
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {round.items.map((item, i) => {
+                const isChosen = chosen === i;
+                const isCorrect = i === round.oddIndex;
+                let bg = '#f9fafb', border = '#e5e7eb', color = '#374151';
+                if (isChosen && isCorrect) { bg = '#d1fae5'; border = '#10b981'; color = '#065f46'; }
+                else if (isChosen && !isCorrect) { bg = '#fee2e2'; border = '#ef4444'; color = '#991b1b'; }
+                else if (chosen !== null && isCorrect) { bg = '#d1fae5'; border = '#10b981'; color = '#065f46'; }
+
+                return (
+                  <button
+                    key={i}
+                    onClick={() => pick(i)}
+                    className="py-4 px-3 rounded-xl font-semibold text-sm border-2 transition-all text-center"
+                    style={{ background: bg, borderColor: border, color }}
+                  >
+                    {item}
+                  </button>
+                );
+              })}
+            </div>
+
+            {chosen !== null && (
+              <div
+                className="mt-2 px-4 py-3 rounded-xl text-xs leading-relaxed border-2"
+                style={{
+                  background: chosen === round.oddIndex ? '#d1fae5' : '#fff7ed',
+                  borderColor: chosen === round.oddIndex ? '#10b981' : '#f59e0b',
+                  color: chosen === round.oddIndex ? '#065f46' : '#92400e',
+                }}
+              >
+                💡 {round.explanation}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// ИГРА «НАПЕЧАТАЙ КОД» (type: typetext)
+// ============================================================
+function TypeTextGame({ activeGame, onClose, onFinish }: Props) {
+  const rounds = activeGame.typeTextRounds!;
+  const [idx, setIdx] = useState(0);
+  const [value, setValue] = useState('');
+  const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
+  const [errors, setErrors] = useState(0);
+  const [done, setDone] = useState(false);
+  const [showHint, setShowHint] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const round = rounds[idx];
+
+  useEffect(() => {
+    setValue('');
+    setStatus('idle');
+    setShowHint(false);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }, [idx]);
+
+  function check() {
+    const trimmed = value.trim();
+    if (trimmed === round.answer) {
+      setStatus('correct');
+      setTimeout(() => {
+        if (idx + 1 >= rounds.length) setDone(true);
+        else setIdx(n => n + 1);
+      }, 900);
+    } else {
+      setStatus('wrong');
+      setErrors(e => e + 1);
+    }
+  }
+
+  const xpEarned = errors === 0 ? activeGame.xp : Math.max(Math.floor(activeGame.xp * 0.65), 15);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
+      <div className="bg-white rounded-2xl border-2 border-cyan-300 shadow-2xl w-full max-w-lg overflow-hidden">
+        <GameHeader activeGame={activeGame} onClose={onClose} />
+
+        {done ? (
+          <WinScreen xp={xpEarned} onFinish={() => onFinish(xpEarned)} label={errors === 0 ? 'Идеальный синтаксис! ✨' : 'Код написан!'} />
+        ) : (
+          <div className="p-6">
+            <div className="flex justify-between text-xs text-gray-400 mb-4">
+              <span>Задание {idx + 1} из {rounds.length}</span>
+              <span>Ошибок: {errors}</span>
+            </div>
+
+            <div className="bg-gray-800 rounded-xl p-4 mb-4">
+              <p className="text-cyan-300 text-xs font-mono mb-1"># {round.prompt}</p>
+              <p className="text-gray-400 text-xs font-mono"># Напечатай правильную строку ниже</p>
+            </div>
+
+            <input
+              ref={inputRef}
+              value={value}
+              onChange={e => { setValue(e.target.value); setStatus('idle'); }}
+              onKeyDown={e => { if (e.key === 'Enter') check(); }}
+              placeholder="Введи код здесь..."
+              spellCheck={false}
+              className="w-full px-4 py-3 rounded-xl font-mono text-sm border-2 outline-none transition-colors mb-3"
+              style={{
+                borderColor: status === 'correct' ? '#10b981' : status === 'wrong' ? '#ef4444' : '#e5e7eb',
+                background: status === 'correct' ? '#d1fae5' : status === 'wrong' ? '#fff1f1' : '#f9fafb',
+              }}
+            />
+
+            {status === 'wrong' && (
+              <p className="text-red-500 text-xs mb-3">Не совсем точно — проверь каждый символ, включая скобки и кавычки</p>
+            )}
+
+            <div className="flex gap-2">
+              <button
+                onClick={check}
+                className="flex-1 py-2.5 rounded-xl font-semibold text-sm text-white bg-cyan-600 hover:bg-cyan-700 transition-colors"
+              >
+                Проверить (Enter)
+              </button>
+              <button
+                onClick={() => setShowHint(h => !h)}
+                className="px-4 py-2.5 rounded-xl text-sm border-2 border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                💡
+              </button>
+            </div>
+
+            {showHint && (
+              <div className="mt-3 px-4 py-2.5 rounded-xl bg-yellow-50 border border-yellow-200 text-xs text-yellow-800">
+                Подсказка: {round.hint}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// ИГРА «ВЕРНО / НЕВЕРНО» (type: truefalse)
+// ============================================================
+function TrueFalseGame({ activeGame, onClose, onFinish }: Props) {
+  const cards = activeGame.trueFalseCards!;
+  const [idx, setIdx] = useState(0);
+  const [answered, setAnswered] = useState<boolean | null>(null);
+  const [errors, setErrors] = useState(0);
+  const [done, setDone] = useState(false);
+
+  const card = cards[idx];
+
+  function answer(val: boolean) {
+    if (answered !== null) return;
+    setAnswered(val);
+    if (val !== card.isTrue) setErrors(e => e + 1);
+    setTimeout(() => {
+      if (idx + 1 >= cards.length) setDone(true);
+      else { setIdx(n => n + 1); setAnswered(null); }
+    }, 1400);
+  }
+
+  const isCorrect = answered !== null && answered === card.isTrue;
+  const xpEarned = errors === 0 ? activeGame.xp : Math.max(Math.floor(activeGame.xp * 0.65), 15);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
+      <div className="bg-white rounded-2xl border-2 border-green-300 shadow-2xl w-full max-w-md overflow-hidden">
+        <GameHeader activeGame={activeGame} onClose={onClose} />
+
+        {done ? (
+          <WinScreen xp={xpEarned} onFinish={() => onFinish(xpEarned)} label={errors === 0 ? 'Всё верно! Эксперт! 🧠' : 'Карточки пройдены!'} />
+        ) : (
+          <div className="p-6">
+            <div className="flex justify-between text-xs text-gray-400 mb-5">
+              <span>Карточка {idx + 1} из {cards.length}</span>
+              <span>Ошибок: {errors}</span>
+            </div>
+
+            {/* Карточка */}
+            <div
+              className="min-h-[130px] rounded-2xl border-2 flex items-center justify-center p-6 mb-6 text-center transition-all"
+              style={{
+                borderColor: answered === null ? '#d1d5db' : isCorrect ? '#10b981' : '#ef4444',
+                background: answered === null ? '#f9fafb' : isCorrect ? '#d1fae5' : '#fee2e2',
+              }}
+            >
+              <p className="font-semibold text-gray-800 text-base leading-relaxed">
+                {card.statement}
+              </p>
+            </div>
+
+            {answered !== null && (
+              <div
+                className="mb-4 px-4 py-3 rounded-xl text-xs border-2"
+                style={{
+                  background: isCorrect ? '#ecfdf5' : '#fff7ed',
+                  borderColor: isCorrect ? '#10b981' : '#f59e0b',
+                  color: isCorrect ? '#065f46' : '#92400e',
+                }}
+              >
+                {isCorrect ? '✅' : '💡'} {card.explanation}
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => answer(true)}
+                disabled={answered !== null}
+                className="py-4 rounded-xl font-bold text-lg border-2 border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition-colors disabled:opacity-50"
+              >
+                ✅ Верно
+              </button>
+              <button
+                onClick={() => answer(false)}
+                disabled={answered !== null}
+                className="py-4 rounded-xl font-bold text-lg border-2 border-red-300 text-red-700 bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-50"
+              >
+                ❌ Неверно
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// ИГРА «ЧИСЛОВОЙ ВВОД» (type: numpad)
+// ============================================================
+function NumpadGame({ activeGame, onClose, onFinish }: Props) {
+  const rounds = activeGame.numpadRounds!;
+  const [idx, setIdx] = useState(0);
+  const [value, setValue] = useState('');
+  const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
+  const [errors, setErrors] = useState(0);
+  const [done, setDone] = useState(false);
+  const [showHint, setShowHint] = useState(false);
+
+  const round = rounds[idx];
+
+  useEffect(() => {
+    setValue('');
+    setStatus('idle');
+    setShowHint(false);
+  }, [idx]);
+
+  function tap(digit: string) {
+    if (status === 'correct') return;
+    setStatus('idle');
+    if (digit === '⌫') setValue(v => v.slice(0, -1));
+    else if (digit === 'C') setValue('');
+    else setValue(v => v + digit);
+  }
+
+  function check() {
+    const num = parseInt(value);
+    if (num === round.answer) {
+      setStatus('correct');
+      setTimeout(() => {
+        if (idx + 1 >= rounds.length) setDone(true);
+        else setIdx(n => n + 1);
+      }, 900);
+    } else {
+      setStatus('wrong');
+      setErrors(e => e + 1);
+    }
+  }
+
+  const xpEarned = errors === 0 ? activeGame.xp : Math.max(Math.floor(activeGame.xp * 0.6), 15);
+  const numpadKeys = ['7','8','9','4','5','6','1','2','3','C','0','⌫'];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
+      <div className="bg-white rounded-2xl border-2 border-indigo-300 shadow-2xl w-full max-w-sm overflow-hidden">
+        <GameHeader activeGame={activeGame} onClose={onClose} />
+
+        {done ? (
+          <WinScreen xp={xpEarned} onFinish={() => onFinish(xpEarned)} label={errors === 0 ? 'Все числа верны! 🔢' : 'Раунды пройдены!'} />
+        ) : (
+          <div className="p-5">
+            <div className="flex justify-between text-xs text-gray-400 mb-3">
+              <span>Вопрос {idx + 1} из {rounds.length}</span>
+              <span>Ошибок: {errors}</span>
+            </div>
+
+            <div className="bg-indigo-50 border-2 border-indigo-100 rounded-xl p-4 mb-4 text-center">
+              <p className="text-gray-700 text-sm font-semibold leading-snug">{round.question}</p>
+            </div>
+
+            {/* Дисплей */}
+            <div
+              className="rounded-xl border-2 px-5 py-3 mb-4 text-center text-2xl font-mono font-bold transition-colors"
+              style={{
+                borderColor: status === 'correct' ? '#10b981' : status === 'wrong' ? '#ef4444' : '#c7d2fe',
+                background: status === 'correct' ? '#d1fae5' : status === 'wrong' ? '#fee2e2' : '#f5f3ff',
+                color: status === 'correct' ? '#065f46' : status === 'wrong' ? '#991b1b' : '#4338ca',
+              }}
+            >
+              {value || <span className="text-gray-300">0</span>}
+              {round.unit && value && <span className="text-base font-normal text-gray-400 ml-2">{round.unit}</span>}
+            </div>
+
+            {status === 'wrong' && (
+              <p className="text-red-500 text-xs text-center mb-2">Неверно, попробуй ещё раз</p>
+            )}
+
+            {/* Нампад */}
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {numpadKeys.map(k => (
+                <button
+                  key={k}
+                  onClick={() => tap(k)}
+                  className="py-3 rounded-xl font-bold text-sm border-2 border-gray-200 bg-gray-50 hover:bg-indigo-50 hover:border-indigo-300 transition-colors"
+                  style={{ color: k === 'C' ? '#ef4444' : k === '⌫' ? '#f59e0b' : '#374151' }}
+                >
+                  {k}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={check}
+                disabled={!value}
+                className="flex-1 py-2.5 rounded-xl font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-700 transition-colors disabled:opacity-40"
+              >
+                Проверить
+              </button>
+              <button
+                onClick={() => setShowHint(h => !h)}
+                className="px-4 py-2.5 rounded-xl text-sm border-2 border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                💡
+              </button>
+            </div>
+
+            {showHint && (
+              <div className="mt-3 px-4 py-2.5 rounded-xl bg-yellow-50 border border-yellow-200 text-xs text-yellow-800">
+                Подсказка: {round.hint}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 // РОУТЕР
 // ============================================================
 export default function InteractiveGameModal({ activeGame, onClose, onFinish }: Props) {
   if (activeGame.type === 'match') return <MatchGame activeGame={activeGame} onClose={onClose} onFinish={onFinish} />;
   if (activeGame.type === 'sort') return <SortGame activeGame={activeGame} onClose={onClose} onFinish={onFinish} />;
+  if (activeGame.type === 'oddone') return <OddOneGame activeGame={activeGame} onClose={onClose} onFinish={onFinish} />;
+  if (activeGame.type === 'typetext') return <TypeTextGame activeGame={activeGame} onClose={onClose} onFinish={onFinish} />;
+  if (activeGame.type === 'truefalse') return <TrueFalseGame activeGame={activeGame} onClose={onClose} onFinish={onFinish} />;
+  if (activeGame.type === 'numpad') return <NumpadGame activeGame={activeGame} onClose={onClose} onFinish={onFinish} />;
   return null;
 }

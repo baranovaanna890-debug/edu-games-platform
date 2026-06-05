@@ -101,6 +101,18 @@ export function CatalogSection({
                 {(game.type === 'match' || game.type === 'sort') && (
                   <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">🎮 Интерактивная</span>
                 )}
+                {game.type === 'oddone' && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">🔍 Найди лишнее</span>
+                )}
+                {game.type === 'typetext' && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-700">⌨️ Напечатай</span>
+                )}
+                {game.type === 'truefalse' && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">✅ Верно/Неверно</span>
+                )}
+                {game.type === 'numpad' && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">🔢 Числа</span>
+                )}
                 {completedGames.includes(game.id) && (
                   <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">✓ Готово</span>
                 )}
