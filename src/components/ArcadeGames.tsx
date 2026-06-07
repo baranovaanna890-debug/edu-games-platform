@@ -77,165 +77,298 @@ function Confetti({ active }: { active: boolean }) {
 }
 
 // ─────────────────────────────────────────────────────
-// 🎯 ПОЙМАЙ ОТВЕТ (catch) — физика + bounce off walls
+// 🎯 ПОЙМАЙ ОТВЕТ (catch) — герой + отсчёт + плавная физика
 // ─────────────────────────────────────────────────────
 interface Ball {
   id: number; label: string; correct: boolean;
   x: number; y: number; vx: number; vy: number;
   state: 'alive' | 'caught' | 'missed';
-  color: string; scale: number;
+  color: string;
+  popAnim: boolean;
 }
+
+// Герои-наставники, каждый раунд — свой
+const CATCH_HEROES = [
+  { name: 'Профессор Байт', avatar: '🧑‍🏫', color: '#818cf8', phrase: (q: string) => `Слушай внимательно! ${q}` },
+  { name: 'Капитан Код',    avatar: '🧑‍🚀', color: '#34d399', phrase: (q: string) => `Задание принято! ${q}` },
+  { name: 'Доктор Дата',   avatar: '🧑‍🔬', color: '#f472b6', phrase: (q: string) => `Анализирую... ${q}` },
+];
+
+type CatchPhase = 'intro' | 'countdown' | 'play' | 'roundend';
 
 export function CatchGame({ activeGame, onClose, onFinish }: Props) {
   const rounds = activeGame.catchRounds!;
   const [roundIdx, setRoundIdx] = useState(0);
+  const [phase, setPhase] = useState<CatchPhase>('intro');
+  const [countdown, setCountdown] = useState(3);
   const [balls, setBalls] = useState<Ball[]>([]);
   const [mistakes, setMistakes] = useState(0);
-  const [roundTransition, setRoundTransition] = useState(false);
+  const [caughtOkCount, setCaughtOkCount] = useState(0);
   const [done, setDone] = useState(false);
   const [confetti, setConfetti] = useState(false);
+  const [lastCaught, setLastCaught] = useState<string | null>(null);
   const animRef = useRef<number>(0);
   const ballsRef = useRef<Ball[]>([]);
   const doneRef = useRef(false);
-  const idCounter = useRef(0);
+  const idRef = useRef(0);
 
-  const CORRECT_COLORS = ['#34d399', '#4ade80'];
-  const WRONG_COLORS = ['#f87171', '#fb923c', '#f472b6'];
+  const CORRECT_COLORS = ['#34d399', '#4ade80', '#a3e635'];
+  const WRONG_COLORS   = ['#f87171', '#fb923c', '#f472b6'];
+  const hero = CATCH_HEROES[roundIdx % CATCH_HEROES.length];
 
-  function initRound(rIdx: number) {
+  // ── Запуск отсчёта ──
+  function startCountdown() {
+    setPhase('countdown');
+    setCountdown(3);
+  }
+
+  useEffect(() => {
+    if (phase !== 'countdown') return;
+    if (countdown <= 0) {
+      spawnBalls(roundIdx);
+      setPhase('play');
+      return;
+    }
+    const t = setTimeout(() => setCountdown(c => c - 1), 900);
+    return () => clearTimeout(t);
+  }, [phase, countdown]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Спавн шаров ──
+  function spawnBalls(rIdx: number) {
     const round = rounds[rIdx];
     const spawned: Ball[] = round.items.map(it => {
-      idCounter.current++;
+      idRef.current++;
       return {
-        id: idCounter.current,
+        id: idRef.current,
         label: it.label, correct: it.correct,
-        x: 5 + Math.random() * 80,
-        y: -20 - Math.random() * 80,
-        vx: (Math.random() - 0.5) * 1.4,
-        vy: 0.6 + Math.random() * 0.8,
+        // Стартуют В ПОЛЕ, но сверху за экраном — разброс по X
+        x: 8 + Math.random() * 76,
+        y: -12 - Math.random() * 50,
+        // vy медленнее: было 0.6-1.4, теперь 0.18-0.34
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: 0.18 + Math.random() * 0.16,
         state: 'alive',
-        color: it.correct ? CORRECT_COLORS[Math.floor(Math.random() * 2)] : WRONG_COLORS[Math.floor(Math.random() * 3)],
-        scale: 1,
+        color: it.correct
+          ? CORRECT_COLORS[Math.floor(Math.random() * 3)]
+          : WRONG_COLORS[Math.floor(Math.random() * 3)],
+        popAnim: false,
       };
     });
     ballsRef.current = spawned;
     setBalls(spawned);
     doneRef.current = false;
+    setCaughtOkCount(0);
   }
 
-  useEffect(() => { initRound(0); }, []);  // eslint-disable-line react-hooks/exhaustive-deps
-
+  // ── Физика ──
   useEffect(() => {
+    if (phase !== 'play') return;
     let last = performance.now();
     function tick(now: number) {
-      const dt = Math.min(now - last, 50); last = now;
+      const dt = Math.min(now - last, 40); last = now;
+      let anyAlive = false;
       ballsRef.current = ballsRef.current.map(b => {
         if (b.state !== 'alive') return b;
         let nx = b.x + b.vx * dt * 0.06;
         const ny = b.y + b.vy * dt * 0.06;
         let nvx = b.vx;
-        // bounce off walls
-        if (nx < 2) { nx = 2; nvx = Math.abs(nvx); }
-        if (nx > 88) { nx = 88; nvx = -Math.abs(nvx); }
-        const missed = ny > 108;
-        return { ...b, x: nx, y: ny, vx: nvx, state: missed ? 'missed' : 'alive' };
+        if (nx < 3)  { nx = 3;  nvx =  Math.abs(nvx); }
+        if (nx > 87) { nx = 87; nvx = -Math.abs(nvx); }
+        if (ny > 108) return { ...b, state: 'missed' as const };
+        anyAlive = true;
+        return { ...b, x: nx, y: ny, vx: nvx };
       });
       setBalls([...ballsRef.current]);
 
-      // check round end
-      if (!doneRef.current) {
-        const alive = ballsRef.current.filter(b => b.state === 'alive').length;
-        const allHandled = ballsRef.current.every(b => b.state !== 'alive');
-        if (alive === 0 && allHandled && ballsRef.current.length > 0) {
+      if (!doneRef.current && !anyAlive && ballsRef.current.length > 0) {
+        const stillAlive = ballsRef.current.some(b => b.state === 'alive');
+        if (!stillAlive) {
           doneRef.current = true;
-          setTimeout(() => advanceRound(), 600);
+          setTimeout(() => endRound(), 500);
         }
       }
       animRef.current = requestAnimationFrame(tick);
     }
     animRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animRef.current);
-  }, [roundIdx]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [phase, roundIdx]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function advanceRound() {
-    setRoundIdx(prev => {
-      const next = prev + 1;
-      if (next >= rounds.length) { setDone(true); return prev; }
-      setRoundTransition(true);
-      setTimeout(() => { setRoundTransition(false); initRound(next); }, 400);
-      return next;
-    });
+  function endRound() {
+    if (roundIdx + 1 >= rounds.length) {
+      setDone(true);
+    } else {
+      setPhase('roundend');
+      setTimeout(() => {
+        setRoundIdx(i => i + 1);
+        setPhase('intro');
+      }, 1200);
+    }
   }
 
   function tap(id: number) {
+    let label = '';
+    let wasCorrect = false;
     ballsRef.current = ballsRef.current.map(b => {
       if (b.id !== id || b.state !== 'alive') return b;
-      if (!b.correct) setMistakes(m => m + 1);
-      else { setConfetti(true); setTimeout(() => setConfetti(false), 700); }
-      return { ...b, state: 'caught', scale: 1.5 };
+      label = b.label;
+      wasCorrect = b.correct;
+      return { ...b, state: 'caught' as const, popAnim: true };
     });
     setBalls([...ballsRef.current]);
+    setLastCaught(label);
+    setTimeout(() => setLastCaught(null), 900);
+    if (wasCorrect) {
+      setConfetti(true); setTimeout(() => setConfetti(false), 800);
+      setCaughtOkCount(c => c + 1);
+    } else {
+      setMistakes(m => m + 1);
+    }
   }
 
   const round = rounds[Math.min(roundIdx, rounds.length - 1)];
-  const caughtOk = balls.filter(b => b.caught && b.correct).length;
   const totalOk = round.items.filter(i => i.correct).length;
   const xp = mistakes === 0 ? activeGame.xp : Math.max(Math.floor(activeGame.xp * 0.6), 15);
 
   return (
     <Overlay>
       <div className="w-full max-w-md flex flex-col rounded-2xl shadow-2xl overflow-hidden"
-        style={{ background: 'linear-gradient(160deg,#1e1b4b 0%,#312e81 100%)', height: '90vh', maxHeight: 600 }}>
-        <ArcadeHeader game={activeGame} onClose={onClose}
-          right={<span className="text-red-300 text-xs font-bold">❌ {mistakes}</span>} />
+        style={{ background: 'linear-gradient(160deg,#0f172a 0%,#1e1b4b 60%,#312e81 100%)', height: '92vh', maxHeight: 620 }}>
 
+        <ArcadeHeader game={activeGame} onClose={onClose}
+          right={
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-white/50">Раунд {roundIdx + 1}/{rounds.length}</span>
+              <span className="text-red-300 text-xs font-bold">❌ {mistakes}</span>
+            </div>
+          } />
+
+        {/* ── Победа ── */}
         {done ? (
           <WinScreen xp={xp}
-            title={mistakes === 0 ? '🎯 Идеальный улов!' : 'Раунды пройдены!'}
-            sub={`Поймано верных: всё. Ошибок: ${mistakes}`}
+            title={mistakes === 0 ? '🎯 Мастер-ловец!' : 'Раунды пройдены!'}
+            sub={`Ошибок: ${mistakes}`}
             onFinish={() => onFinish(xp)} />
+
+        /* ── Интро с героем ── */
+        ) : phase === 'intro' ? (
+          <div className="flex flex-col items-center justify-center flex-1 p-6 text-center"
+            style={{ animation: 'fadeSlideIn 0.4s ease both' }}>
+            <div className="text-7xl mb-3" style={{ animation: 'heroFloat 2s ease infinite alternate' }}>
+              {hero.avatar}
+            </div>
+            <div className="text-sm font-bold mb-1" style={{ color: hero.color }}>{hero.name}</div>
+            <div className="bg-white/10 rounded-2xl px-5 py-3 mb-6 max-w-xs text-white text-sm leading-relaxed"
+              style={{ border: `1px solid ${hero.color}44` }}>
+              "{hero.phrase(round.question)}"
+            </div>
+            <div className="text-white/40 text-xs mb-6">Лови только верные ответы — они зелёные!</div>
+            <button onClick={startCountdown}
+              className="px-8 py-3 rounded-xl font-bold text-gray-900 text-base hover:scale-105 active:scale-95 transition-transform"
+              style={{ background: hero.color, boxShadow: `0 0 24px ${hero.color}66` }}>
+              🎯 Готов ловить!
+            </button>
+          </div>
+
+        /* ── Обратный отсчёт ── */
+        ) : phase === 'countdown' ? (
+          <div className="flex flex-col items-center justify-center flex-1">
+            <div className="text-5xl text-white/40 mb-2">{hero.avatar}</div>
+            <div key={countdown}
+              className="text-9xl font-bold"
+              style={{
+                color: countdown === 1 ? '#f87171' : countdown === 2 ? '#fbbf24' : '#34d399',
+                animation: 'countPop 0.5s ease both',
+                textShadow: `0 0 40px currentColor`,
+              }}>
+              {countdown === 0 ? 'GO!' : countdown}
+            </div>
+            <div className="text-white/40 text-sm mt-4">приготовься...</div>
+          </div>
+
+        /* ── Конец раунда ── */
+        ) : phase === 'roundend' ? (
+          <div className="flex flex-col items-center justify-center flex-1 text-center p-6">
+            <div className="text-6xl mb-3" style={{ animation: 'heroFloat 1s ease infinite alternate' }}>{hero.avatar}</div>
+            <div className="text-white font-bold text-lg mb-1">Раунд завершён!</div>
+            <div className="text-white/50 text-sm">Следующий через секунду...</div>
+          </div>
+
+        /* ── Игровое поле ── */
         ) : (
-          <div className={`flex flex-col flex-1 transition-opacity duration-300 ${roundTransition ? 'opacity-0' : 'opacity-100'}`}>
-            <div className="px-4 py-2 text-center flex-shrink-0">
+          <div className="flex flex-col flex-1 relative">
+            {/* Задание */}
+            <div className="px-4 pt-2 pb-1 text-center flex-shrink-0">
               <p className="text-white font-bold text-sm">{round.question}</p>
-              <p className="text-white/40 text-xs">Раунд {roundIdx + 1}/{rounds.length} · поймано {caughtOk}/{totalOk}</p>
+              <p className="text-white/40 text-xs">поймано {caughtOkCount}/{totalOk} верных</p>
             </div>
 
+            {/* Игровая арена */}
             <div className="relative flex-1 mx-3 mb-3 rounded-xl overflow-hidden"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <Confetti active={confetti} />
 
-              {/* Звёзды-фон */}
-              {[...Array(20)].map((_, i) => (
-                <div key={i} className="absolute rounded-full bg-white/10"
-                  style={{ width: 2, height: 2, left: `${(i * 5.1) % 95}%`, top: `${(i * 7.3) % 90}%` }} />
+              {/* Звёзды */}
+              {[...Array(24)].map((_, i) => (
+                <div key={i} className="absolute rounded-full"
+                  style={{
+                    width: i % 4 === 0 ? 3 : 2, height: i % 4 === 0 ? 3 : 2,
+                    left: `${(i * 4.2) % 97}%`, top: `${(i * 3.9 + 5) % 94}%`,
+                    background: 'white',
+                    opacity: 0.08 + (i % 5) * 0.04,
+                  }} />
               ))}
 
+              {/* Герой-корзина внизу */}
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none z-10"
+                style={{ animation: 'heroIdle 1.8s ease infinite alternate' }}>
+                <div className="text-3xl">{hero.avatar}</div>
+              </div>
+
+              {/* Всплывающая метка при поимке */}
+              {lastCaught && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none"
+                  style={{ animation: 'catchPop 0.8s ease both' }}>
+                  <span className="text-2xl font-bold text-white bg-white/20 px-3 py-1 rounded-full">
+                    ✓ {lastCaught}
+                  </span>
+                </div>
+              )}
+
+              {/* Шары */}
               {balls.map(b => (
                 b.state === 'missed' ? null :
                 <button key={b.id} onClick={() => tap(b.id)}
                   disabled={b.state === 'caught'}
-                  className="absolute rounded-full px-3 py-1.5 text-xs font-bold text-gray-900 select-none border-2 border-white/30"
+                  className="absolute select-none font-bold text-gray-900 border-2 border-white/40"
                   style={{
                     left: `${b.x}%`, top: `${b.y}%`,
+                    padding: '5px 10px',
+                    borderRadius: '999px',
+                    fontSize: '11px',
                     background: b.color,
-                    transform: `scale(${b.state === 'caught' ? 0 : 1})`,
+                    transform: b.state === 'caught' ? 'scale(0) translateY(-20px)' : 'scale(1)',
                     opacity: b.state === 'caught' ? 0 : 1,
-                    transition: b.state === 'caught' ? 'all 0.25s ease' : 'none',
-                    boxShadow: `0 0 16px ${b.color}99`,
+                    transition: b.state === 'caught' ? 'all 0.3s ease' : 'none',
+                    boxShadow: `0 0 18px ${b.color}bb, 0 2px 6px rgba(0,0,0,0.4)`,
                     whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    zIndex: 5,
                   }}>
                   {b.label}
                 </button>
               ))}
-
-              <div className="absolute bottom-2 left-0 right-0 text-center text-white/20 text-xs pointer-events-none">
-                🟢 верное · 🔴 неверное
-              </div>
             </div>
           </div>
         )}
       </div>
+
+      <style>{`
+        @keyframes heroFloat { from{transform:translateY(0) rotate(-3deg)} to{transform:translateY(-10px) rotate(3deg)} }
+        @keyframes heroIdle  { from{transform:translateX(-50%) translateY(0)} to{transform:translateX(-50%) translateY(-5px)} }
+        @keyframes countPop  { from{opacity:0;transform:scale(2)} to{opacity:1;transform:scale(1)} }
+        @keyframes catchPop  { 0%{opacity:0;transform:translate(-50%,-50%) scale(0.5)} 40%{opacity:1;transform:translate(-50%,-60%) scale(1.2)} 100%{opacity:0;transform:translate(-50%,-80%) scale(1)} }
+        @keyframes fadeSlideIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+      `}</style>
       <GameStyles />
     </Overlay>
   );
