@@ -113,6 +113,18 @@ export function CatalogSection({
                 {game.type === 'numpad' && (
                   <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">🔢 Числа</span>
                 )}
+                {game.type === 'catch' && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">🎯 Поймай!</span>
+                )}
+                {game.type === 'wordbuild' && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">🔤 Собери слово</span>
+                )}
+                {game.type === 'race' && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">⚡ Гонка</span>
+                )}
+                {game.type === 'puzzle' && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-700">🧩 Пазл</span>
+                )}
                 {completedGames.includes(game.id) && (
                   <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">✓ Готово</span>
                 )}

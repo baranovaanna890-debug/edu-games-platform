@@ -5,6 +5,7 @@ import { StatsSection, CertificateSection, ContactSection } from '@/components/S
 import GameModal from '@/components/GameModal';
 import InteractiveGameModal from '@/components/InteractiveGameModal';
 import QuestGameModal from '@/components/QuestGameModal';
+import ArcadeGames from '@/components/ArcadeGames';
 
 type Section = 'catalog' | 'stats' | 'certificate' | 'contact';
 
@@ -74,6 +75,8 @@ export default function Index() {
   }
 
   const isQuest = activeGame?.type === 'quest';
+  const arcadeTypes = ['catch', 'wordbuild', 'race', 'puzzle'];
+  const isArcade = activeGame && arcadeTypes.includes(activeGame.type);
   const interactiveTypes = ['match', 'sort', 'oddone', 'typetext', 'truefalse', 'numpad'];
   const isInteractive = activeGame && interactiveTypes.includes(activeGame.type);
 
@@ -145,7 +148,15 @@ export default function Index() {
         />
       )}
 
-      {activeGame && isInteractive && !isQuest && (
+      {activeGame && isArcade && (
+        <ArcadeGames
+          activeGame={activeGame}
+          onClose={() => setActiveGame(null)}
+          onFinish={handleInteractiveFinish}
+        />
+      )}
+
+      {activeGame && isInteractive && !isQuest && !isArcade && (
         <InteractiveGameModal
           activeGame={activeGame}
           onClose={() => setActiveGame(null)}
@@ -153,7 +164,7 @@ export default function Index() {
         />
       )}
 
-      {activeGame && !isInteractive && !isQuest && (
+      {activeGame && !isInteractive && !isQuest && !isArcade && (
         <GameModal
           activeGame={activeGame}
           gameStep={gameStep}

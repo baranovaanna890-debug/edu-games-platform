@@ -1,5 +1,5 @@
 export type Difficulty = 'easy' | 'medium' | 'hard';
-export type GameType = 'quiz' | 'match' | 'sort' | 'fill' | 'code' | 'logic' | 'quest' | 'oddone' | 'typetext' | 'truefalse' | 'numpad';
+export type GameType = 'quiz' | 'match' | 'sort' | 'fill' | 'code' | 'logic' | 'quest' | 'oddone' | 'typetext' | 'truefalse' | 'numpad' | 'catch' | 'wordbuild' | 'race' | 'puzzle';
 
 export interface Game {
   id: number;
@@ -21,6 +21,10 @@ export interface Game {
   typeTextRounds?: TypeTextRound[];
   trueFalseCards?: TrueFalseCard[];
   numpadRounds?: NumpadRound[];
+  catchRounds?: CatchRound[];
+  wordBuildRounds?: WordBuildRound[];
+  raceQuestions?: RaceQuestion[];
+  puzzleRounds?: PuzzleRound[];
 }
 
 export interface QuizQuestion {
@@ -44,6 +48,29 @@ export interface FillBlank {
   text: string;
   blanks: string[];
   answers: string[];
+}
+
+export interface CatchRound {
+  question: string;
+  items: { label: string; correct: boolean }[];
+}
+
+export interface WordBuildRound {
+  clue: string;
+  word: string;
+}
+
+export interface RaceQuestion {
+  question: string;
+  options: string[];
+  correct: number;
+}
+
+export interface PuzzleRound {
+  question: string;
+  options: string[];
+  correct: number;
+  emoji: string;
 }
 
 export interface OddOneRound {
@@ -89,6 +116,88 @@ export interface QuestData {
 }
 
 export const games: Game[] = [
+  // === АРКАДНЫЕ ИГРЫ ===
+  {
+    id: 401,
+    title: 'Поймай ответ!',
+    description: 'Правильные и неправильные термины летят по экрану — кликни только верные!',
+    topic: 'Аппаратное обеспечение',
+    grade: '7 класс',
+    difficulty: 'easy',
+    type: 'catch',
+    emoji: '🎯',
+    xp: 65,
+    duration: '4 мин',
+    catchRounds: [
+      { question: 'Лови устройства ВВОДА', items: [{ label: 'Клавиатура', correct: true }, { label: 'Монитор', correct: false }, { label: 'Мышь', correct: true }, { label: 'Принтер', correct: false }, { label: 'Сканер', correct: true }, { label: 'Колонки', correct: false }, { label: 'Микрофон', correct: true }, { label: 'Проектор', correct: false }] },
+      { question: 'Лови устройства ХРАНЕНИЯ данных', items: [{ label: 'SSD', correct: true }, { label: 'RAM', correct: false }, { label: 'HDD', correct: true }, { label: 'CPU', correct: false }, { label: 'Flash-карта', correct: true }, { label: 'Видеокарта', correct: false }, { label: 'CD-диск', correct: true }, { label: 'Материнская плата', correct: false }] },
+      { question: 'Лови ЯЗЫКИ ПРОГРАММИРОВАНИЯ', items: [{ label: 'Python', correct: true }, { label: 'HTML', correct: false }, { label: 'Java', correct: true }, { label: 'CSS', correct: false }, { label: 'C++', correct: true }, { label: 'SQL', correct: false }, { label: 'Pascal', correct: true }, { label: 'JSON', correct: false }] },
+    ],
+  },
+  {
+    id: 402,
+    title: 'Собери слово!',
+    description: 'Буквы рассыпались — кликай на них по порядку, чтобы собрать IT-термин',
+    topic: 'Информатика и термины',
+    grade: '7 класс',
+    difficulty: 'easy',
+    type: 'wordbuild',
+    emoji: '🔤',
+    xp: 60,
+    duration: '5 мин',
+    wordBuildRounds: [
+      { clue: 'Главный «мозг» компьютера (3 буквы)', word: 'CPU' },
+      { clue: 'Временная память компьютера (3 буквы)', word: 'RAM' },
+      { clue: 'Язык программирования — питон', word: 'PYTHON' },
+      { clue: 'Всемирная паутина (3 буквы)', word: 'WWW' },
+      { clue: 'Вредоносная программа', word: 'ВИРУС' },
+      { clue: 'Сеть для соединения компьютеров', word: 'ИНТЕРНЕТ' },
+      { clue: 'Хранилище данных на компьютере', word: 'БАЗА' },
+      { clue: 'Программа для просмотра сайтов', word: 'БРАУЗЕР' },
+    ],
+  },
+  {
+    id: 403,
+    title: 'Гонка знаний!',
+    description: 'Отвечай быстрее — чем меньше времени потратишь, тем больше очков получишь!',
+    topic: 'Основы информатики',
+    grade: '8 класс',
+    difficulty: 'medium',
+    type: 'race',
+    emoji: '⚡',
+    xp: 90,
+    duration: '5 мин',
+    raceQuestions: [
+      { question: 'Сколько бит в байте?', options: ['4', '8', '16', '32'], correct: 1 },
+      { question: 'Что такое алгоритм?', options: ['Программа', 'Последовательность шагов', 'База данных', 'Тип данных'], correct: 1 },
+      { question: 'Какой тип данных хранит целые числа?', options: ['float', 'string', 'int', 'bool'], correct: 2 },
+      { question: 'Что делает функция print() в Python?', options: ['Считывает ввод', 'Выводит текст', 'Создаёт файл', 'Удаляет данные'], correct: 1 },
+      { question: 'Как называется повторяющийся блок кода?', options: ['Условие', 'Функция', 'Цикл', 'Переменная'], correct: 2 },
+      { question: 'HTTP расшифровывается как...', options: ['HyperText Transfer Protocol', 'High Tech Transfer Program', 'Home Tool Transfer Page', 'Hyper Tool Text Protocol'], correct: 0 },
+      { question: 'Двоичное 1000 равно...', options: ['4', '6', '8', '10'], correct: 2 },
+      { question: 'Что хранит переменная?', options: ['Программу', 'Значение', 'Алгоритм', 'Функцию'], correct: 1 },
+    ],
+  },
+  {
+    id: 404,
+    title: 'Пазл: Открой картинку!',
+    description: 'За каждый верный ответ открывается кусочек секретной картинки — собери её полностью!',
+    topic: 'Программирование на Python',
+    grade: '8 класс',
+    difficulty: 'medium',
+    type: 'puzzle',
+    emoji: '🧩',
+    xp: 80,
+    duration: '6 мин',
+    puzzleRounds: [
+      { question: 'Как вывести текст в Python?', options: ['echo()', 'print()', 'write()', 'show()'], correct: 1, emoji: '🐍' },
+      { question: 'Что такое переменная?', options: ['Программа', 'Ячейка памяти с именем', 'Функция', 'Цикл'], correct: 1, emoji: '📦' },
+      { question: 'Какой оператор проверяет равенство?', options: ['=', '!=', '==', '=>'], correct: 2, emoji: '⚖️' },
+      { question: 'Что делает цикл for?', options: ['Проверяет условие', 'Повторяет код N раз', 'Создаёт функцию', 'Останавливает программу'], correct: 1, emoji: '🔄' },
+      { question: 'Как объявить функцию в Python?', options: ['function', 'def', 'func', 'define'], correct: 1, emoji: '🛠️' },
+      { question: 'Что такое список (list) в Python?', options: ['Одно число', 'Набор элементов', 'Строка', 'Словарь'], correct: 1, emoji: '📋' },
+    ],
+  },
   // === НАЙДИ ЛИШНЕЕ ===
   {
     id: 301,
